@@ -80,6 +80,8 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 .diag-medio .diag-title{color:#b45309;}
 .diag-ruim{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.4);}
 .diag-ruim .diag-title{color:#dc2626;}
+.lastupd{text-align:center;font-size:.72rem;color:var(--mu);margin-top:24px;font-weight:600;}
+.lastupd b{color:#0c1d73;}
 
 /* meta campaign summary cards */
 .meta-camp-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:13px;margin-bottom:14px;}
@@ -181,10 +183,12 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
   <table class="ct"><thead><tr><th>Criativo</th><th>Status</th><th>Investido</th><th>Alcance</th><th>Vis. 3s</th><th>Cliques</th><th>CPM</th><th>Hook</th><th>Retencao</th><th>Acao</th><th></th></tr></thead><tbody></tbody></table>
 </div>
 
+<div id="lastUpd" class="lastupd">Carregando…</div>
+
 </main>
 
 <script>
-var _MRAW=[];
+var _MRAW=[],_lastView={mode:'preset',p:'all'},_firstLoad=true;
 const _SID="1kpPbGM1adx3KGBRN_-q0RJpNFfK0oZIyNB41u5jXWkQ",_GM="0";
 var _csvURL=function(gid){return "https://docs.google.com/spreadsheets/d/"+_SID+"/gviz/tq?tqx=out:csv&gid="+gid;};
 function _sp(l){var p=[],c="",q=false;for(var i=0;i<l.length;i++){var ch=l[i];if(ch==='"')q=!q;else if(ch===","&&!q){p.push(c.trim().replace(/^"|"$/g,""));c="";}else c+=ch;}p.push(c.trim().replace(/^"|"$/g,""));return p;}
@@ -243,21 +247,30 @@ function _renderMeta(ads,dmin,dmax){var _ml=document.getElementById('metaLbl');i
   var ctb=document.querySelector(".ct tbody");if(ctb)ctb.innerHTML=ads.length?ads.slice().sort(function(a,b){return b.invest-a.invest;}).map(crR).join(""):'<tr><td colspan="11" style="text-align:center;color:#6272a0;padding:26px;">Sem dados no periodo selecionado.</td></tr>';
 }
 function _mPeriodRange(p){if(p==='all'||!_MRAW.length)return[null,null];var dates=_MRAW.map(function(r){return r.date;}).filter(Boolean).sort();var today=dates[dates.length-1],t=new Date(today),c=new Date(t);c.setDate(t.getDate()-(p-1));return[c.toISOString().slice(0,10),today];}
-function setPreset(p,btn){document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');var pr=_mPeriodRange(p);_renderMetaRange(pr[0],pr[1]);}
-function setDow(dow,btn){document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');var last=null;_MRAW.forEach(function(r){if(!r.date)return;var p=r.date.split('-');var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));if(d.getDay()===dow&&(!last||r.date>last))last=r.date;});if(!last){alert('Nenhum dado para este dia da semana.');return;}_renderMetaRange(last,last);}
-function applyDateRange(){var from=document.getElementById('dFrom').value,to=document.getElementById('dTo').value;if(!from||!to){alert('Selecione as duas datas.');return;}document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active');});_renderMetaRange(from,to);}
+function setPreset(p,btn){document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');_lastView={mode:'preset',p:p};var pr=_mPeriodRange(p);_renderMetaRange(pr[0],pr[1]);}
+function setDow(dow,btn){document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');var last=null;_MRAW.forEach(function(r){if(!r.date)return;var p=r.date.split('-');var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));if(d.getDay()===dow&&(!last||r.date>last))last=r.date;});if(!last){alert('Nenhum dado para este dia da semana.');return;}_lastView={mode:'dow',dow:dow};_renderMetaRange(last,last);}
+function applyDateRange(){var from=document.getElementById('dFrom').value,to=document.getElementById('dTo').value;if(!from||!to){alert('Selecione as duas datas.');return;}document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active');});_lastView={mode:'range',from:from,to:to};_renderMetaRange(from,to);}
 
-(async function(){
+// Re-aplica o filtro que o usuario deixou selecionado (usado no auto-refresh)
+function _applyView(){
+  if(!_MRAW.length){var md=_aggMeta(_MRAW);_renderMeta(md.ads,md.dmin,md.dmax);return;}
+  if(_lastView.mode==='range'){_renderMetaRange(_lastView.from,_lastView.to);}
+  else if(_lastView.mode==='dow'){var last=null;_MRAW.forEach(function(r){if(!r.date)return;var p=r.date.split('-');var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));if(d.getDay()===_lastView.dow&&(!last||r.date>last))last=r.date;});_renderMetaRange(last,last);}
+  else{var pr=_mPeriodRange(_lastView.p);_renderMetaRange(pr[0],pr[1]);}
+}
+async function loadData(){
   try{
-    var r=await fetch(_csvURL(_GM));
+    var r=await fetch(_csvURL(_GM)+"&_="+Date.now());
     if(!r.ok)throw new Error('HTTP '+r.status);
     var m=await r.text();
     _MRAW=_parseMeta(m);
-    var dates=_MRAW.map(function(x){return x.date;}).filter(Boolean).sort();
-    if(dates.length){var df=document.getElementById('dFrom'),dt=document.getElementById('dTo');if(df)df.value=dates[0];if(dt)dt.value=dates[dates.length-1];}
-    var md=_aggMeta(_MRAW);_renderMeta(md.ads,md.dmin,md.dmax);
-  }catch(e){console.error('Erro ao buscar planilha:',e);var ml=document.getElementById('metaLbl');if(ml)ml.textContent='Meta Ads — Brand Awareness · erro ao carregar dados (verifique o compartilhamento da planilha)';var ms=document.querySelector('.mkstrip');if(ms)ms.innerHTML='<div class="mkpi" style="grid-column:1/-1;text-align:center;color:#ef4444;font-weight:700;">Não foi possível carregar os dados da planilha.</div>';}
-})();
+    if(_firstLoad){var dates=_MRAW.map(function(x){return x.date;}).filter(Boolean).sort();if(dates.length){var df=document.getElementById('dFrom'),dt=document.getElementById('dTo');if(df&&!df.value)df.value=dates[0];if(dt&&!dt.value)dt.value=dates[dates.length-1];}_firstLoad=false;}
+    _applyView();
+    var lu=document.getElementById('lastUpd');if(lu)lu.innerHTML='Atualiza sozinha a cada 5 min · Última atualização: <b>'+new Date().toLocaleString('pt-BR')+'</b>';
+  }catch(e){console.error('Erro ao buscar planilha:',e);var ml=document.getElementById('metaLbl');if(ml)ml.textContent='Meta Ads — Brand Awareness · erro ao carregar dados (verifique o compartilhamento da planilha)';var ms=document.querySelector('.mkstrip');if(ms)ms.innerHTML='<div class="mkpi" style="grid-column:1/-1;text-align:center;color:#ef4444;font-weight:700;">Não foi possível carregar os dados da planilha.</div>';var lu=document.getElementById('lastUpd');if(lu)lu.innerHTML='Falha ao atualizar — nova tentativa em 5 min · '+new Date().toLocaleString('pt-BR');}
+}
+loadData();
+setInterval(loadData,300000);
 </script>
 </body>
 </html>
