@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FIFI — Dashboard de Performance</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f0f3ff; --bg2:#0c1d73; --card:#ffffff; --card2:#e8edf8;
+  --brd:#d5dcf0; --or:#2621bf; --or2:#1e40af;
+  --wh:#0c1d73; --mu:#6272a0; --mu2:#9ba8c8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--wh);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 38px,rgba(38,33,191,0.04) 38px,rgba(38,33,191,0.04) 40px);pointer-events:none;z-index:0;}
+
+/* gradient line */
+.gl{height:3px;background:linear-gradient(90deg,var(--or),#4285f4,#34a853,#f59e0b,var(--or));background-size:300% 100%;animation:gm 4s linear infinite;}
+@keyframes gm{0%{background-position:0%}100%{background-position:300%}}
+
+/* header */
+header{position:relative;z-index:1;background:linear-gradient(135deg,#0c1d73,#1d1f96);border-bottom:none;}
+.hi{max-width:1300px;margin:0 auto;padding:24px 32px;display:flex;flex-direction:column;gap:16px;}
+.hi-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.hl{display:flex;align-items:center;gap:16px;}
+.logo-box{width:58px;height:58px;border-radius:13px;background:linear-gradient(135deg,#2621bf,#4285f4);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:1rem;letter-spacing:1px;box-shadow:0 6px 24px rgba(0,0,0,.35);}
+.ht .brand{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.ht .brand span{font-size:0.68rem;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;}
+.ht h1{font-size:1.35rem;font-weight:900;line-height:1.1;color:#fff;}
+.ht h1 span{color:#7f9cff;}
+.ht p{font-size:0.75rem;color:rgba(255,255,255,0.55);margin-top:2px;}
+
+/* controls */
+.ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ptabs{display:flex;background:var(--card2);border:1px solid var(--brd);border-radius:8px;overflow:hidden;}
+.ptab{padding:7px 13px;font-size:0.75rem;font-weight:700;cursor:pointer;color:var(--mu);border:none;background:none;font-family:'Nunito',sans-serif;transition:background .15s,color .15s;white-space:nowrap;}
+.ptab.active{background:#2621bf;color:#fff;}
+.ptab:hover:not(.active){background:rgba(38,33,191,0.08);color:var(--wh);}
+.drange{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;}
+.drange label{font-size:.7rem;font-weight:700;color:var(--mu);white-space:nowrap;}
+.drange input[type=date]{border:none;background:transparent;font-family:Nunito,sans-serif;font-size:.75rem;font-weight:700;color:var(--wh);outline:none;cursor:pointer;}
+.drange-sep{font-size:.7rem;color:var(--mu2);}
+.dbtn{background:#2621bf;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-family:Nunito,sans-serif;font-size:.73rem;font-weight:800;cursor:pointer;letter-spacing:.5px;white-space:nowrap;}
+
+/* main */
+main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32px 80px;}
+
+/* section label */
+.slbl{font-size:0.65rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#0c1d73;display:flex;align-items:center;gap:12px;margin-bottom:14px;margin-top:32px;}
+.slbl:first-child{margin-top:0;}
+.slbl::after{content:'';flex:1;height:1px;background:var(--brd);}
+
+/* meta kpi strip */
+.mkstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:14px;}
+.mkpi{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:15px 13px;position:relative;overflow:hidden;}
+.mkpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:12px 12px 0 0;}
+.mkpi.or::before{background:var(--or);} .mkpi.bl::before{background:#1877f2;}
+.mkpi.go::before{background:#f59e0b;} .mkpi.pu::before{background:#a855f7;}
+.mkpi.im::before{background:#4285f4;} .mkpi.vi::before{background:#1a73e8;}
+.mkpi.cp::before{background:#ea4335;}
+.mkpi-lbl{font-size:.62rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#6272a0;margin-bottom:7px;}
+.mkpi-val{font-size:1.35rem;font-weight:900;letter-spacing:-.5px;color:#0c1d73;}
+.mkpi.go .mkpi-val{color:#f59e0b;} .mkpi.pu .mkpi-val{color:#a855f7;} .mkpi.or .mkpi-val{color:var(--or);}
+.mkpi-sub{font-size:.57rem;color:var(--mu2);margin-top:5px;line-height:1.5;}
+
+/* meta campaign summary cards */
+.meta-camp-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:13px;margin-bottom:14px;}
+.meta-sum-card{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:18px 20px;}
+.ms-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.ms-title{font-size:.82rem;font-weight:800;color:#0c1d73;}
+.ms-invest{font-size:1.15rem;font-weight:900;color:#0c1d73;}
+.ms-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.ms-m-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mu);margin-bottom:3px;}
+.ms-m-val{font-size:.95rem;font-weight:900;color:#0c1d73;}
+.sv1 .ms-header{border-bottom:2px solid rgba(24,119,242,.3);padding-bottom:12px;}
+.sv2 .ms-header{border-bottom:2px solid rgba(168,85,247,.3);padding-bottom:12px;}
+
+/* creative table */
+.ctw{background:var(--card);border:1px solid var(--brd);border-radius:15px;overflow-x:auto;}
+.ct{width:100%;border-collapse:collapse;font-size:.8rem;min-width:900px;}
+.ct thead tr{background:var(--card2);}
+.ct thead th{padding:11px 14px;text-align:left;font-size:.62rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mu);white-space:nowrap;}
+.ct tbody tr{border-bottom:1px solid var(--brd);transition:background .12s;}
+.ct tbody tr:last-child{border-bottom:none;}
+.ct tbody tr:hover{background:rgba(38,33,191,.03);}
+.ct tbody td{padding:11px 14px;color:#1d2a5e;white-space:nowrap;}
+.cname{font-weight:800;color:#0c1d73;}
+.bp{display:inline-block;padding:2px 8px;border-radius:100px;font-size:.62rem;font-weight:800;}
+.pf {background:rgba(24,119,242,.2);color:#2563eb;}
+.pf2{background:rgba(168,85,247,.2);color:#7c3aed;}
+.nr{text-align:right;}
+.rt-bad{color:#ef4444;font-weight:800;} .rt-medio{color:#f59e0b;font-weight:800;}
+.rt-bom{color:#0ea55b;font-weight:800;} .rt-otimo{color:#059646;font-weight:800;}
+.stativo{color:#059646;font-weight:800;font-size:.75rem;}
+.ap{display:inline-block;padding:4px 10px;border-radius:6px;font-size:.65rem;font-weight:800;letter-spacing:.4px;white-space:nowrap;}
+.ac-escalar{background:rgba(52,168,83,.25);color:#059646;}
+.ac-ruim{background:rgba(239,68,68,.2);color:#dc2626;}
+.ac-aguardar{background:rgba(245,158,11,.25);color:#b45309;}
+.ac-basica{background:rgba(98,114,160,.12);color:var(--mu);}
+.abtn{display:inline-flex;align-items:center;gap:4px;background:rgba(38,33,191,.05);border:1px solid var(--brd);color:var(--mu);padding:4px 10px;border-radius:6px;font-size:.68rem;font-weight:700;text-decoration:none;transition:border-color .15s,color .15s;}
+.abtn:hover{border-color:var(--or);color:var(--or);}
+
+@media(max-width:900px){
+  .mkstrip{grid-template-columns:repeat(3,1fr);}
+  main{padding:20px 16px 60px;}
+  .hi{padding:18px 16px;}
+}
+</style>
+</head>
+<body>
+
+<div class="gl"></div>
+<header>
+  <div class="hi">
+    <div class="hi-top">
+      <div class="hl">
+        <div class="logo-box">FIFI</div>
+        <div class="ht">
+          <div class="brand"><span>CARDÔ · PERFORMANCE</span></div>
+          <h1>FIFI <span>Limpeza</span> — Performance</h1>
+          <p>Meta Ads · Brand Awareness · Investimento · Criativos</p>
+        </div>
+      </div>
+    </div>
+    <div class="ctrl">
+      <div class="ptabs">
+        <button class="ptab active" onclick="setPreset('all',this)">Tudo</button>
+        <button class="ptab" onclick="setPreset(7,this)">7 dias</button>
+        <button class="ptab" onclick="setPreset(3,this)">3 dias</button>
+        <button class="ptab" onclick="setPreset(1,this)">Hoje</button>
+      </div>
+      <div class="ptabs" style="margin-left:4px;">
+        <button class="ptab" onclick="setDow(1,this)">Seg</button>
+        <button class="ptab" onclick="setDow(2,this)">Ter</button>
+        <button class="ptab" onclick="setDow(3,this)">Qua</button>
+        <button class="ptab" onclick="setDow(4,this)">Qui</button>
+        <button class="ptab" onclick="setDow(5,this)">Sex</button>
+        <button class="ptab" onclick="setDow(6,this)">Sab</button>
+        <button class="ptab" onclick="setDow(0,this)">Dom</button>
+      </div>
+      <div class="drange">
+        <label>De</label>
+        <input type="date" id="dFrom">
+        <span class="drange-sep">—</span>
+        <label>Ate</label>
+        <input type="date" id="dTo">
+      </div>
+      <button class="dbtn" onclick="applyDateRange()">Aplicar</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- META ADS -->
+<div class="slbl" id="metaLbl">Meta Ads — Brand Awareness</div>
+<div class="mkstrip"><div class="mkpi" style="grid-column:1/-1;text-align:center;color:#6272a0;font-weight:700;">Carregando dados da planilha…</div></div>
+<div class="meta-camp-sum"></div>
+
+<div class="slbl">Criativos - Meta Ads</div>
+<div class="ctw">
+  <table class="ct"><thead><tr><th>Criativo</th><th>Status</th><th>Investido</th><th>Alcance</th><th>Vis. 3s</th><th>Cliques</th><th>CPM</th><th>Hook</th><th>Retencao</th><th>Acao</th><th></th></tr></thead><tbody></tbody></table>
+</div>
+
+</main>
+
+<script>
+var _MRAW=[];
+const _SID="1kpPbGM1adx3KGBRN_-q0RJpNFfK0oZIyNB41u5jXWkQ",_GM="0";
+var _csvURL=function(gid){return "https://docs.google.com/spreadsheets/d/"+_SID+"/gviz/tq?tqx=out:csv&gid="+gid;};
+function _sp(l){var p=[],c="",q=false;for(var i=0;i<l.length;i++){var ch=l[i];if(ch==='"')q=!q;else if(ch===","&&!q){p.push(c.trim().replace(/^"|"$/g,""));c="";}else c+=ch;}p.push(c.trim().replace(/^"|"$/g,""));return p;}
+function _brlP(s){return parseFloat(String(s).replace(/R\$\s*/,"").replace(/\./g,"").replace(",","."))||0;}
+function _intP(s){return parseInt(String(s).replace(/[.,]/g,""))||0;}
+function _parseMeta(txt){
+  var rows=[];
+  txt.split("\n").slice(1).forEach(function(l){
+    if(!l.trim())return;
+    var p=_sp(l);if(p.length<10||!p[3])return;
+    var _dd=(p[0]||"").split("/");var _iso=_dd.length===3?_dd[2]+"-"+_dd[1]+"-"+_dd[0]:"";
+    rows.push({date:_iso,name:p[3],camp:p[1],url:p[4].trim(),invest:_brlP(p[5]),imp:_intP(p[6]),viz:_intP(p[7]),alcance:_intP(p[8]),viz3s:_intP(p[9]),p25:(p.length>11?_intP(p[11]):0),visitas:(p.length>14?_intP(p[14]):0)});
+  });
+  return rows;
+}
+function _aggMeta(rows){
+  var agg={},dmin=null,dmax=null;
+  rows.forEach(function(r){
+    if(r.date){if(!dmin||r.date<dmin)dmin=r.date;if(!dmax||r.date>dmax)dmax=r.date;}
+    if(!agg[r.name])agg[r.name]={name:r.name,camp:r.camp,url:r.url,invest:0,imp:0,viz:0,alcance:0,viz3s:0,p25:0,visitas:0};
+    var a=agg[r.name];a.invest+=r.invest;a.imp+=r.imp;a.viz+=r.viz;a.alcance+=r.alcance;a.viz3s+=r.viz3s;a.p25+=r.p25;a.visitas+=r.visitas;
+  });
+  return {ads:Object.values(agg),dmin:dmin,dmax:dmax};
+}
+function _renderMetaRange(from,to){
+  var rows=(!from||!to)?_MRAW:_MRAW.filter(function(r){return r.date&&r.date>=from&&r.date<=to;});
+  var md=_aggMeta(rows);_renderMeta(md.ads,md.dmin,md.dmax);
+}
+function _renderMeta(ads,dmin,dmax){var _ml=document.getElementById('metaLbl');if(_ml&&dmin&&dmax){var _fb=function(s){var x=s.split("-");return x[2]+"/"+x[1]+"/"+x[0];};_ml.textContent="Meta Ads — Brand Awareness · "+_fb(dmin)+" a "+_fb(dmax);}
+  function pct(a,b){return b?Math.round(a/b*1000)/10:0;}
+  function bF(v){return"R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function hcl(v){return v>=60?"otimo":v>=45?"bom":v>=30?"medio":"bad";}
+  function rcl(v){return v>=50?"otimo":v>=35?"bom":v>=20?"medio":"bad";}
+  var ti=0,tm=0,tv=0,tz=0,tp=0;
+  ads.forEach(function(a){ti+=a.invest;tm+=a.imp;tv+=a.viz;tz+=a.viz3s;tp+=a.p25;});
+  var hook=pct(tz,tm),ret=pct(tp,tz),cpm=tm?Math.round(ti/tm*1000*100)/100:0;
+  function mkp(cls,lbl,val,sub){return'<div class="mkpi '+cls+'"><div class="mkpi-lbl">'+lbl+'</div><div class="mkpi-val">'+val+'</div>'+(sub?'<div class="mkpi-sub">'+sub+'</div>':'')+'</div>';}
+  var ms=document.querySelector(".mkstrip");
+  var tvisitas=ads.reduce(function(s,a){return s+a.visitas;},0);
+  if(ms)ms.innerHTML=mkp("or","Investido",bF(ti))+mkp("bl","Visitas Perfil",tvisitas.toLocaleString("pt-BR"))+mkp("go","Hook Rate",hook+"%","ruim &lt;30% · medio 30-45%<br/>bom 45-60% · otimo &gt;60%")+mkp("pu","Retencao 25%",ret+"%","ruim &lt;20% · medio 20-35%<br/>bom 35-50% · otimo &gt;50%")+mkp("im","Impressoes",tm.toLocaleString("pt-BR"))+mkp("vi","Viz. 3s",tz.toLocaleString("pt-BR"))+mkp("cp","CPM",bF(cpm));
+  function sv(lst){var r={invest:0,imp:0,viz3s:0,p25:0};lst.forEach(function(a){r.invest+=a.invest;r.imp+=a.imp;r.viz3s+=a.viz3s;r.p25+=a.p25;});return r;}
+  // Um card por campanha (adapta-se a quantas campanhas a FIFI tiver no periodo)
+  var byCamp={};ads.forEach(function(a){(byCamp[a.camp]=byCamp[a.camp]||[]).push(a);});
+  var camps=Object.keys(byCamp).sort(function(a,b){return sv(byCamp[b]).invest-sv(byCamp[a]).invest;});
+  function cc(cls,t,s){var h=pct(s.viz3s,s.imp),r=pct(s.p25,s.viz3s);return'<div class="meta-sum-card '+cls+'"><div class="ms-header"><div class="ms-title">'+t+'</div><div class="ms-invest">'+bF(s.invest)+'</div></div><div class="ms-metrics"><div><div class="ms-m-lbl">Impressoes</div><div class="ms-m-val">'+s.imp.toLocaleString("pt-BR")+'</div></div><div><div class="ms-m-lbl">Viz. 3s</div><div class="ms-m-val">'+s.viz3s.toLocaleString("pt-BR")+'</div></div><div><div class="ms-m-lbl">Hook Rate</div><div class="ms-m-val rt-'+hcl(h)+'">'+h+'%</div></div><div><div class="ms-m-lbl">Retencao</div><div class="ms-m-val rt-'+rcl(r)+'">'+r+'%</div></div></div></div>';}
+  var mcs=document.querySelector(".meta-camp-sum");if(mcs)mcs.innerHTML=camps.map(function(c,i){return cc(i%2?"sv2":"sv1",c||"Campanha",sv(byCamp[c]));}).join("");
+  function acM(inv,h,r){return inv<2?["basica","AMOSTRA BASICA"]:h>=45&&r>=35?["escalar","ESCALAR"]:h<20&&r<20?["ruim","RUIM"]:inv<8?["basica","AMOSTRA BASICA"]:["aguardar","AGUARDAR DADOS"];}
+  function crR(a){var h=pct(a.viz3s,a.imp),r=pct(a.p25,a.viz3s),cp=a.imp?Math.round(a.invest/a.imp*1000*100)/100:0,ac=acM(a.invest,h,r);return'<tr><td class="cname">'+a.name+'</td><td><span class="stativo">Ativo</span></td><td class="nr">'+bF(a.invest)+'</td><td class="nr">'+a.alcance.toLocaleString("pt-BR")+'</td><td class="nr">'+a.viz3s.toLocaleString("pt-BR")+'</td><td class="nr">'+a.viz.toLocaleString("pt-BR")+'</td><td class="nr">'+bF(cp)+'</td><td class="nr rt-'+hcl(h)+'">'+h+'%</td><td class="nr rt-'+rcl(r)+'">'+r+'%</td><td><span class="ap ac-'+ac[0]+'">'+ac[1]+'</span></td><td><a class="abtn" href="'+a.url+'" target="_blank">&#8599; Anuncio</a></td></tr>';}
+  var ctb=document.querySelector(".ct tbody");if(ctb)ctb.innerHTML=ads.length?ads.slice().sort(function(a,b){return b.invest-a.invest;}).map(crR).join(""):'<tr><td colspan="11" style="text-align:center;color:#6272a0;padding:26px;">Sem dados no periodo selecionado.</td></tr>';
+}
+function _mPeriodRange(p){if(p==='all'||!_MRAW.length)return[null,null];var dates=_MRAW.map(function(r){return r.date;}).filter(Boolean).sort();var today=dates[dates.length-1],t=new Date(today),c=new Date(t);c.setDate(t.getDate()-(p-1));return[c.toISOString().slice(0,10),today];}
+function setPreset(p,btn){document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');var pr=_mPeriodRange(p);_renderMetaRange(pr[0],pr[1]);}
+function setDow(dow,btn){document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');var last=null;_MRAW.forEach(function(r){if(!r.date)return;var p=r.date.split('-');var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));if(d.getDay()===dow&&(!last||r.date>last))last=r.date;});if(!last){alert('Nenhum dado para este dia da semana.');return;}_renderMetaRange(last,last);}
+function applyDateRange(){var from=document.getElementById('dFrom').value,to=document.getElementById('dTo').value;if(!from||!to){alert('Selecione as duas datas.');return;}document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active');});_renderMetaRange(from,to);}
+
+(async function(){
+  try{
+    var r=await fetch(_csvURL(_GM));
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    var m=await r.text();
+    _MRAW=_parseMeta(m);
+    var dates=_MRAW.map(function(x){return x.date;}).filter(Boolean).sort();
+    if(dates.length){var df=document.getElementById('dFrom'),dt=document.getElementById('dTo');if(df)df.value=dates[0];if(dt)dt.value=dates[dates.length-1];}
+    var md=_aggMeta(_MRAW);_renderMeta(md.ads,md.dmin,md.dmax);
+  }catch(e){console.error('Erro ao buscar planilha:',e);var ml=document.getElementById('metaLbl');if(ml)ml.textContent='Meta Ads — Brand Awareness · erro ao carregar dados (verifique o compartilhamento da planilha)';var ms=document.querySelector('.mkstrip');if(ms)ms.innerHTML='<div class="mkpi" style="grid-column:1/-1;text-align:center;color:#ef4444;font-weight:700;">Não foi possível carregar os dados da planilha.</div>';}
+})();
+</script>
+</body>
+</html>
