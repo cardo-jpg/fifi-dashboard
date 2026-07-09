@@ -62,7 +62,24 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 .mkpi-lbl{font-size:.62rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#6272a0;margin-bottom:7px;}
 .mkpi-val{font-size:1.35rem;font-weight:900;letter-spacing:-.5px;color:#0c1d73;}
 .mkpi.go .mkpi-val{color:#f59e0b;} .mkpi.pu .mkpi-val{color:#a855f7;} .mkpi.or .mkpi-val{color:var(--or);}
-.mkpi-sub{font-size:.57rem;color:var(--mu2);margin-top:5px;line-height:1.5;}
+.mkpi-sub{font-size:.62rem;color:var(--mu);margin-top:6px;line-height:1.45;font-weight:600;}
+
+/* status selo + diagnostico (clareza p/ leigos) */
+.mstat{display:inline-block;margin-top:9px;padding:3px 11px;border-radius:100px;font-size:.72rem;font-weight:900;letter-spacing:.4px;}
+.mstat-otimo,.mstat-bom{background:rgba(5,150,70,.15);color:#059646;}
+.mstat-medio{background:rgba(245,158,11,.2);color:#b45309;}
+.mstat-bad{background:rgba(239,68,68,.15);color:#dc2626;}
+.diag{display:flex;align-items:center;gap:16px;border-radius:14px;padding:16px 20px;margin-bottom:16px;border:1px solid;}
+.diag-ico{font-size:1.9rem;line-height:1;flex-shrink:0;}
+.diag-title{font-size:1.02rem;font-weight:900;margin-bottom:3px;}
+.diag-desc{font-size:.82rem;line-height:1.5;font-weight:600;color:#334155;}
+.diag-desc b{color:#0c1d73;}
+.diag-bom{background:rgba(5,150,70,.08);border-color:rgba(5,150,70,.35);}
+.diag-bom .diag-title{color:#059646;}
+.diag-medio{background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.4);}
+.diag-medio .diag-title{color:#b45309;}
+.diag-ruim{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.4);}
+.diag-ruim .diag-title{color:#dc2626;}
 
 /* meta campaign summary cards */
 .meta-camp-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:13px;margin-bottom:14px;}
@@ -155,6 +172,7 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 
 <!-- META ADS -->
 <div class="slbl" id="metaLbl">Meta Ads — Brand Awareness</div>
+<div id="diag"></div>
 <div class="mkstrip"><div class="mkpi" style="grid-column:1/-1;text-align:center;color:#6272a0;font-weight:700;">Carregando dados da planilha…</div></div>
 <div class="meta-camp-sum"></div>
 
@@ -206,7 +224,14 @@ function _renderMeta(ads,dmin,dmax){var _ml=document.getElementById('metaLbl');i
   function mkp(cls,lbl,val,sub){return'<div class="mkpi '+cls+'"><div class="mkpi-lbl">'+lbl+'</div><div class="mkpi-val">'+val+'</div>'+(sub?'<div class="mkpi-sub">'+sub+'</div>':'')+'</div>';}
   var ms=document.querySelector(".mkstrip");
   var tvisitas=ads.reduce(function(s,a){return s+a.visitas;},0);
-  if(ms)ms.innerHTML=mkp("or","Investido",bF(ti))+mkp("bl","Visitas Perfil",tvisitas.toLocaleString("pt-BR"))+mkp("go","Hook Rate",hook+"%","ruim &lt;30% · medio 30-45%<br/>bom 45-60% · otimo &gt;60%")+mkp("pu","Retencao 25%",ret+"%","ruim &lt;20% · medio 20-35%<br/>bom 35-50% · otimo &gt;50%")+mkp("im","Impressoes",tm.toLocaleString("pt-BR"))+mkp("vi","Viz. 3s",tz.toLocaleString("pt-BR"))+mkp("cp","CPM",bF(cpm));
+  var _sw={otimo:['🟢','ÓTIMO'],bom:['🟢','BOM'],medio:['🟡','MÉDIO'],bad:['🔴','RUIM']};
+  function mkpS(cls,lbl,val,rc,plain){var s=_sw[rc];return'<div class="mkpi '+cls+'"><div class="mkpi-lbl">'+lbl+'</div><div class="mkpi-val">'+val+'</div><div class="mstat mstat-'+rc+'">'+s[0]+' '+s[1]+'</div><div class="mkpi-sub">'+plain+'</div></div>';}
+  var hc=hcl(hook),rc=rcl(ret);
+  if(ms)ms.innerHTML=mkp("or","Investido",bF(ti))+mkp("bl","Visitas Perfil",tvisitas.toLocaleString("pt-BR"))+mkpS("go","Hook Rate",hook+"%",hc,Math.round(hook)+" de cada 100 pararam pra assistir o começo")+mkpS("pu","Retencao 25%",ret+"%",rc,Math.round(ret)+" de cada 100 continuaram vendo o vídeo")+mkp("im","Impressoes",tm.toLocaleString("pt-BR"))+mkp("vi","Viz. 3s",tz.toLocaleString("pt-BR"))+mkp("cp","CPM",bF(cpm));
+  var _lv={bad:0,medio:1,bom:2,otimo:3},_tot=_lv[hc]+_lv[rc],_dc=_tot>=4?'bom':_tot>=2?'medio':'ruim';
+  var _dm={bom:['🟢','BOM','Seus vídeos estão indo bem — o começo prende a atenção e boa parte das pessoas continua assistindo. Pode manter e colocar mais verba nos que vão melhor.'],medio:['🟡','MÉDIO','Estão razoáveis, mas dá pra melhorar. Em geral o ajuste é nos primeiros 3 segundos (o "gancho") ou deixar o início do vídeo mais dinâmico.'],ruim:['🔴','PRECISA MELHORAR','Os vídeos ainda não estão prendendo o público. Vale testar novos ganchos nos primeiros segundos e cortar as partes mais lentas.']};
+  var _d=_dm[_dc],_dg=document.getElementById('diag');
+  if(_dg)_dg.innerHTML='<div class="diag diag-'+_dc+'"><div class="diag-ico">'+_d[0]+'</div><div><div class="diag-title">Como estão os conteúdos: '+_d[1]+'</div><div class="diag-desc">'+_d[2]+' &nbsp;•&nbsp; <b>Hook</b> = quantas pessoas param pra assistir o começo · <b>Retenção</b> = quantas continuam vendo.</div></div></div>';
   function sv(lst){var r={invest:0,imp:0,viz3s:0,p25:0};lst.forEach(function(a){r.invest+=a.invest;r.imp+=a.imp;r.viz3s+=a.viz3s;r.p25+=a.p25;});return r;}
   // Um card por campanha (adapta-se a quantas campanhas a FIFI tiver no periodo)
   var byCamp={};ads.forEach(function(a){(byCamp[a.camp]=byCamp[a.camp]||[]).push(a);});
