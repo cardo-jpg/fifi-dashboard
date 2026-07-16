@@ -83,6 +83,22 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 .lastupd{text-align:center;font-size:.72rem;color:var(--mu);margin-top:24px;font-weight:600;}
 .lastupd b{color:#0c1d73;}
 
+/* resumo executivo (linguagem simples) */
+.resumo{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:24px 28px;margin-bottom:14px;color:#334155;font-weight:600;line-height:1.7;}
+.resumo b{color:#0c1d73;font-weight:900;}
+.r-lead{font-size:1.02rem;line-height:1.65;}
+.resumo ul{list-style:none;display:flex;flex-direction:column;gap:9px;margin:16px 0;}
+.resumo li{display:flex;gap:11px;align-items:flex-start;font-size:.92rem;line-height:1.5;}
+.resumo li::before{content:'●';color:var(--or);font-size:.6rem;margin-top:.6em;flex-shrink:0;}
+.r-pratica{font-size:.95rem;background:var(--card2);border-radius:10px;padding:13px 16px;margin-top:4px;}
+.r-note{font-size:.71rem;color:var(--mu2);margin-top:14px;font-weight:600;line-height:1.5;}
+.efet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:14px;}
+.efet-card{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;}
+.efet-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--or),#4285f4);}
+.efet-lbl{font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--mu);margin-bottom:8px;}
+.efet-val{font-size:1.6rem;font-weight:900;color:#0c1d73;letter-spacing:-.5px;}
+.efet-sub{font-size:.72rem;color:var(--mu);margin-top:7px;line-height:1.45;font-weight:600;}
+
 /* meta campaign summary cards */
 .meta-camp-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:13px;margin-bottom:14px;}
 .meta-sum-card{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:18px 20px;}
@@ -122,6 +138,9 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 
 @media(max-width:900px){
   .mkstrip{grid-template-columns:repeat(3,1fr);}
+  .efet-grid{grid-template-columns:1fr;}
+  .resumo{padding:18px 18px;}
+  .diag{flex-direction:column;align-items:flex-start;gap:10px;}
   main{padding:20px 16px 60px;}
   .hi{padding:18px 16px;}
 }
@@ -172,9 +191,14 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 
 <main>
 
+<!-- RESUMO EXECUTIVO -->
+<div class="slbl">Resumo — o que o investimento trouxe</div>
+<div id="resumo" class="resumo">Carregando…</div>
+<div class="efet-grid" id="efet"></div>
+<div id="diag"></div>
+
 <!-- META ADS -->
 <div class="slbl" id="metaLbl">Meta Ads — Brand Awareness</div>
-<div id="diag"></div>
 <div class="mkstrip"><div class="mkpi" style="grid-column:1/-1;text-align:center;color:#6272a0;font-weight:700;">Carregando dados da planilha…</div></div>
 <div class="meta-camp-sum"></div>
 
@@ -236,6 +260,33 @@ function _renderMeta(ads,dmin,dmax){var _ml=document.getElementById('metaLbl');i
   var _dm={bom:['🟢','BOM','Seus vídeos estão indo bem — o começo prende a atenção e boa parte das pessoas continua assistindo. Pode manter e colocar mais verba nos que vão melhor.'],medio:['🟡','MÉDIO','Estão razoáveis, mas dá pra melhorar. Em geral o ajuste é nos primeiros 3 segundos (o "gancho") ou deixar o início do vídeo mais dinâmico.'],ruim:['🔴','PRECISA MELHORAR','Os vídeos ainda não estão prendendo o público. Vale testar novos ganchos nos primeiros segundos e cortar as partes mais lentas.']};
   var _d=_dm[_dc],_dg=document.getElementById('diag');
   if(_dg)_dg.innerHTML='<div class="diag diag-'+_dc+'"><div class="diag-ico">'+_d[0]+'</div><div><div class="diag-title">Como estão os conteúdos: '+_d[1]+'</div><div class="diag-desc">'+_d[2]+' &nbsp;•&nbsp; <b>Hook</b> = quantas pessoas param pra assistir o começo · <b>Retenção</b> = quantas continuam vendo.</div></div></div>';
+
+  // ---- Resumo em linguagem simples (para publico leigo) ----
+  var _fbd=function(s){var x=s.split("-");return x[2]+"/"+x[1]+"/"+x[0];};
+  var _rs=document.getElementById('resumo'),_ef=document.getElementById('efet');
+  var _cpv3=tz?ti/tz:0,_cpvis=tvisitas?ti/tvisitas:0;
+  if(!ads.length){
+    if(_rs)_rs.innerHTML='Sem dados no período selecionado.';
+    if(_ef)_ef.innerHTML='';
+    if(_dg)_dg.innerHTML='';
+  }else{
+    var _per=(dmin&&dmax)?('Entre <b>'+_fbd(dmin)+'</b> e <b>'+_fbd(dmax)+'</b>'):'No período selecionado';
+    var _p1=tz>0?'cada pessoa que parou para assistir custou <b>'+bF(_cpv3)+'</b>':'';
+    var _p2=tvisitas>0?'cada visita ao perfil custou <b>'+bF(_cpvis)+'</b>':'';
+    var _pr=[_p1,_p2].filter(Boolean).join(' e ');
+    if(_rs)_rs.innerHTML='<div class="r-lead">'+_per+', a FIFI investiu <b>'+bF(ti)+'</b> em anúncios no Instagram e Facebook. Veja o que esse valor trouxe:</div>'
+      +'<ul>'
+      +'<li>Os vídeos apareceram <b>'+tm.toLocaleString("pt-BR")+' vezes</b> na tela das pessoas</li>'
+      +'<li><b>'+tz.toLocaleString("pt-BR")+' vezes</b> alguém parou para assistir (3 segundos ou mais)</li>'
+      +'<li>Isso levou <b>'+tvisitas.toLocaleString("pt-BR")+' pessoas</b> a visitar o perfil da FIFI</li>'
+      +'</ul>'
+      +(_pr?'<div class="r-pratica">Na prática: '+_pr+'.</div>':'')
+      +'<div class="r-note">Obs.: "apareceram X vezes" é o total de exibições — a mesma pessoa pode ter visto o anúncio mais de uma vez.</div>';
+    if(_ef)_ef.innerHTML=
+       '<div class="efet-card"><div class="efet-lbl">Custo por pessoa que assistiu</div><div class="efet-val">'+(tz>0?bF(_cpv3):'—')+'</div><div class="efet-sub">O que custou cada vez que alguém parou pra ver o vídeo. Quanto menor, melhor.</div></div>'
+      +'<div class="efet-card"><div class="efet-lbl">Custo por visita ao perfil</div><div class="efet-val">'+(tvisitas>0?bF(_cpvis):'—')+'</div><div class="efet-sub">O que custou levar uma pessoa até o perfil da FIFI. Quanto menor, melhor.</div></div>'
+      +'<div class="efet-card"><div class="efet-lbl">Custo pra aparecer 1.000 vezes</div><div class="efet-val">'+(tm>0?bF(cpm):'—')+'</div><div class="efet-sub">É o CPM: o preço de mostrar o anúncio mil vezes. Quanto menor, melhor.</div></div>';
+  }
   function sv(lst){var r={invest:0,imp:0,viz3s:0,p25:0};lst.forEach(function(a){r.invest+=a.invest;r.imp+=a.imp;r.viz3s+=a.viz3s;r.p25+=a.p25;});return r;}
   // Um card por campanha (adapta-se a quantas campanhas a FIFI tiver no periodo)
   var byCamp={};ads.forEach(function(a){(byCamp[a.camp]=byCamp[a.camp]||[]).push(a);});
