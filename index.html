@@ -12,7 +12,8 @@
   --wh:#0c1d73; --mu:#6272a0; --mu2:#9ba8c8;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--wh);min-height:100vh;overflow-x:hidden;}
+html{overflow-x:hidden;width:100%;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--wh);min-height:100vh;overflow-x:hidden;width:100%;max-width:100%;}
 body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 38px,rgba(38,33,191,0.04) 38px,rgba(38,33,191,0.04) 40px);pointer-events:none;z-index:0;}
 
 /* gradient line */
@@ -136,6 +137,11 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 .abtn{display:inline-flex;align-items:center;gap:4px;background:rgba(38,33,191,.05);border:1px solid var(--brd);color:var(--mu);padding:4px 10px;border-radius:6px;font-size:.68rem;font-weight:700;text-decoration:none;transition:border-color .15s,color .15s;}
 .abtn:hover{border-color:var(--or);color:var(--or);}
 
+/* impede que texto/grids estourem a largura no celular */
+main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.efet-grid,.meta-camp-sum{min-width:0;max-width:100%;}
+.ht{flex:1 1 auto;}
+.ht h1,.ht p,.mkpi-val,.mkpi-sub,.efet-val,.efet-sub,.ms-invest,.ms-title,.diag-title,.diag-desc,.r-lead,.resumo li{overflow-wrap:anywhere;word-break:break-word;}
+
 @media(max-width:900px){
   .mkstrip{grid-template-columns:repeat(3,1fr);}
   .efet-grid{grid-template-columns:1fr;}
@@ -143,6 +149,21 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
   .diag{flex-direction:column;align-items:flex-start;gap:10px;}
   main{padding:20px 16px 60px;}
   .hi{padding:18px 16px;}
+  .ht h1{font-size:1.15rem;}
+}
+@media(max-width:600px){
+  .mkstrip{grid-template-columns:repeat(2,1fr);}
+  .ht h1{font-size:1.02rem;}
+  .ht .brand span{font-size:.6rem;}
+  .hl{gap:11px;}
+  .logo-box{width:46px;height:46px;font-size:.8rem;}
+  .ctrl{gap:6px;}
+  .drange{width:100%;}
+  .drange input[type=date]{flex:1;min-width:0;}
+  .resumo li{font-size:.86rem;}
+  .r-pratica{font-size:.88rem;}
+  .efet-val{font-size:1.4rem;}
+  main{padding:16px 12px 56px;}
 }
 </style>
 </head>
