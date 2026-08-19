@@ -233,6 +233,7 @@ main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.
 <div class="viewtabs">
   <button class="vtab active" onclick="setView('dash',this)">📊 Dashboard ao vivo</button>
   <button class="vtab" onclick="setView('julho',this)">📅 Resumo — Julho</button>
+  <button class="vtab" onclick="setView('agosto',this)">📅 Resumo — Agosto</button>
 </div>
 
 <div id="viewDash">
@@ -271,6 +272,23 @@ main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.
   <div class="slbl">Ranking dos vídeos no mês</div>
   <div class="ctw">
     <table class="ct"><thead><tr><th>Vídeo</th><th>Investido</th><th>Assistiram</th><th>Hook</th><th>Retenção</th><th>Veredito</th></tr></thead><tbody id="jRank"></tbody></table>
+  </div>
+</div>
+
+<div id="viewAgosto" style="display:none">
+  <div class="jhero">
+    <div class="jhero-badge">📅 Fechamento do mês</div>
+    <div class="jhero-title">Resumo de Agosto · 2026</div>
+    <div class="jhero-sub" id="aPeriodo">Carregando…</div>
+  </div>
+  <div id="aResumo" class="resumo"></div>
+  <div class="slbl">Os números de agosto</div>
+  <div class="jgrid" id="aStats"></div>
+  <div class="slbl">Como foram os conteúdos</div>
+  <div id="aDiag"></div>
+  <div class="slbl">Ranking dos vídeos no mês</div>
+  <div class="ctw">
+    <table class="ct"><thead><tr><th>Vídeo</th><th>Investido</th><th>Assistiram</th><th>Hook</th><th>Retenção</th><th>Veredito</th></tr></thead><tbody id="aRank"></tbody></table>
   </div>
 </div>
 
@@ -377,9 +395,12 @@ function _applyView(){
 function setView(v,btn){
   document.querySelectorAll('.vtab').forEach(function(b){b.classList.remove('active');});
   if(btn)btn.classList.add('active');
-  var dash=document.getElementById('viewDash'),jul=document.getElementById('viewJulho'),ctrl=document.querySelector('.ctrl');
-  if(v==='julho'){if(dash)dash.style.display='none';if(jul)jul.style.display='block';if(ctrl)ctrl.style.display='none';renderJulho();}
-  else{if(jul)jul.style.display='none';if(dash)dash.style.display='block';if(ctrl)ctrl.style.display='flex';}
+  var ctrl=document.querySelector('.ctrl');
+  var views={dash:'viewDash',julho:'viewJulho',agosto:'viewAgosto'};
+  Object.keys(views).forEach(function(k){var e=document.getElementById(views[k]);if(e)e.style.display=(k===v?'block':'none');});
+  if(ctrl)ctrl.style.display=(v==='dash'?'flex':'none');
+  if(v==='julho')renderJulho();
+  if(v==='agosto')renderAgosto();
 }
 function renderJulho(){
   var rows=_MRAW.filter(function(r){return r.date&&r.date.slice(0,7)==='2026-07';});
@@ -415,6 +436,40 @@ function renderJulho(){
   var jrk=document.getElementById('jRank');
   if(jrk)jrk.innerHTML=sorted.map(function(a,i){var h=pct(a.viz3s,a.imp),r=pct(a.p25,a.viz3s),ac=acM(a.invest,h,r);return '<tr><td class="cname">'+(i===0?'🏆 ':'')+a.name+'</td><td class="nr">'+bF(a.invest)+'</td><td class="nr">'+a.viz3s.toLocaleString("pt-BR")+'</td><td class="nr rt-'+hcl(h)+'">'+h+'%</td><td class="nr rt-'+rcl(r)+'">'+r+'%</td><td><span class="ap ac-'+ac[0]+'">'+ac[1]+'</span></td></tr>';}).join('');
 }
+function renderAgosto(){
+  var rows=_MRAW.filter(function(r){return r.date&&r.date.slice(0,7)==='2026-08';});
+  var md=_aggMeta(rows),ads=md.ads;
+  var bF=function(v){return "R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});};
+  var pct=function(a,b){return b?Math.round(a/b*1000)/10:0;};
+  var hcl=function(v){return v>=60?"otimo":v>=45?"bom":v>=30?"medio":"bad";};
+  var rcl=function(v){return v>=50?"otimo":v>=35?"bom":v>=20?"medio":"bad";};
+  var _fb=function(s){var x=s.split("-");return x[2]+"/"+x[1]+"/"+x[0];};
+  var _sw={otimo:'ÓTIMO',bom:'BOM',medio:'MÉDIO',bad:'RUIM'};
+  var per=document.getElementById('aPeriodo');
+  if(!ads.length){if(per)per.textContent='Ainda não há dados de agosto na planilha.';['aResumo','aStats','aDiag'].forEach(function(id){var e=document.getElementById(id);if(e)e.innerHTML='';});var jr0=document.getElementById('aRank');if(jr0)jr0.innerHTML='<tr><td colspan="6" style="text-align:center;color:#6272a0;padding:26px;">Sem dados.</td></tr>';return;}
+  var ti=0,tm=0,tz=0,tp=0,tvis=0;
+  ads.forEach(function(a){ti+=a.invest;tm+=a.imp;tz+=a.viz3s;tp+=a.p25;tvis+=a.visitas;});
+  var hook=pct(tz,tm),ret=pct(tp,tz),cpm=tm?Math.round(ti/tm*1000*100)/100:0,cpv3=tz?ti/tz:0,cpvis=tvis?ti/tvis:0;
+  if(per)per.textContent='De '+_fb(md.dmin)+' a '+_fb(md.dmax)+' · '+ads.length+' vídeos no ar';
+  var jr=document.getElementById('aResumo');
+  if(jr)jr.innerHTML='<div class="r-lead">Em <b>agosto</b>, a FIFI investiu <b>'+bF(ti)+'</b> em anúncios no Instagram e Facebook. Esse valor colocou os vídeos na frente das pessoas <b>'+tm.toLocaleString("pt-BR")+' vezes</b>, fez <b>'+tz.toLocaleString("pt-BR")+'</b> pararem para assistir e levou <b>'+tvis.toLocaleString("pt-BR")+' pessoas</b> a visitar o perfil da FIFI — cada visita saindo por <b>'+bF(cpvis)+'</b>.</div>';
+  var js=document.getElementById('aStats');
+  function jc(lbl,val,sub){return '<div class="jcard"><div class="jcard-lbl">'+lbl+'</div><div class="jcard-val">'+val+'</div><div class="jcard-sub">'+sub+'</div></div>';}
+  if(js)js.innerHTML=jc('Investido no mês',bF(ti),'total em anúncios')
+    +jc('Apareceu na tela',tm.toLocaleString("pt-BR")+'x','vezes que o anúncio foi exibido')
+    +jc('Pararam pra assistir',tz.toLocaleString("pt-BR"),'visualizações de 3 segundos ou mais')
+    +jc('Visitas ao perfil',tvis.toLocaleString("pt-BR"),'pessoas que foram ver a FIFI')
+    +jc('Custo por quem assistiu',bF(cpv3),'quanto menor, melhor')
+    +jc('Custo por visita',bF(cpvis),'quanto menor, melhor');
+  var hc=hcl(hook),rc=rcl(ret),_lv={bad:0,medio:1,bom:2,otimo:3},_tot=_lv[hc]+_lv[rc],_dc=_tot>=4?'bom':_tot>=2?'medio':'ruim';
+  var _dm={bom:['🟢','BOM','No geral os vídeos de agosto prenderam bem a atenção e seguraram quem começou a assistir.'],medio:['🟡','MÉDIO','Os vídeos de agosto foram razoáveis — dá pra melhorar o gancho dos primeiros segundos.'],ruim:['🔴','PRECISA MELHORAR','Em agosto os vídeos ainda não prenderam bem o público — vale testar novos ganchos.']};
+  var _d=_dm[_dc],jd=document.getElementById('aDiag');
+  if(jd)jd.innerHTML='<div class="diag diag-'+_dc+'"><div class="diag-ico">'+_d[0]+'</div><div><div class="diag-title">Conteúdos de agosto: '+_d[1]+'</div><div class="diag-desc">'+_d[2]+' Hook médio <b>'+hook+'%</b> ('+_sw[hc]+') · Retenção média <b>'+ret+'%</b> ('+_sw[rc]+').</div></div></div>';
+  function acM(inv,h,r){return inv<2?["basica","AMOSTRA BÁSICA"]:h>=45&&r>=35?["escalar","MELHOR — INVESTIR MAIS"]:h<20&&r<20?["ruim","FRACO"]:inv<8?["basica","AMOSTRA BÁSICA"]:["aguardar","OK — ACOMPANHAR"];}
+  var sorted=ads.slice().sort(function(a,b){return (pct(b.viz3s,b.imp)+pct(b.p25,b.viz3s))-(pct(a.viz3s,a.imp)+pct(a.p25,a.viz3s));});
+  var jrk=document.getElementById('aRank');
+  if(jrk)jrk.innerHTML=sorted.map(function(a,i){var h=pct(a.viz3s,a.imp),r=pct(a.p25,a.viz3s),ac=acM(a.invest,h,r);return '<tr><td class="cname">'+(i===0?'🏆 ':'')+a.name+'</td><td class="nr">'+bF(a.invest)+'</td><td class="nr">'+a.viz3s.toLocaleString("pt-BR")+'</td><td class="nr rt-'+hcl(h)+'">'+h+'%</td><td class="nr rt-'+rcl(r)+'">'+r+'%</td><td><span class="ap ac-'+ac[0]+'">'+ac[1]+'</span></td></tr>';}).join('');
+}
 async function loadData(){
   try{
     var r=await fetch(_csvURL(_GM)+"&_="+Date.now());
@@ -422,7 +477,7 @@ async function loadData(){
     var m=await r.text();
     _MRAW=_parseMeta(m);
     if(_firstLoad){var dates=_MRAW.map(function(x){return x.date;}).filter(Boolean).sort();if(dates.length){var df=document.getElementById('dFrom'),dt=document.getElementById('dTo');if(df&&!df.value)df.value=dates[0];if(dt&&!dt.value)dt.value=dates[dates.length-1];}_firstLoad=false;}
-    _applyView();renderJulho();
+    _applyView();renderJulho();renderAgosto();
     var lu=document.getElementById('lastUpd');if(lu)lu.innerHTML='Atualiza sozinha a cada 5 min · Última atualização: <b>'+new Date().toLocaleString('pt-BR')+'</b>';
   }catch(e){console.error('Erro ao buscar planilha:',e);var ml=document.getElementById('metaLbl');if(ml)ml.textContent='Meta Ads — Brand Awareness · erro ao carregar dados (verifique o compartilhamento da planilha)';var ms=document.querySelector('.mkstrip');if(ms)ms.innerHTML='<div class="mkpi" style="grid-column:1/-1;text-align:center;color:#ef4444;font-weight:700;">Não foi possível carregar os dados da planilha.</div>';var lu=document.getElementById('lastUpd');if(lu)lu.innerHTML='Falha ao atualizar — nova tentativa em 5 min · '+new Date().toLocaleString('pt-BR');}
 }
