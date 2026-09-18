@@ -153,6 +153,25 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 .camp-status{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:100px;font-size:.6rem;font-weight:800;letter-spacing:.4px;vertical-align:middle;}
 .camp-status.on{background:rgba(5,150,70,.15);color:#059646;}
 .camp-status.off{background:rgba(148,163,184,.18);color:#64748b;}
+/* ===== Vendas (funil) ===== */
+.jcard.hero-roas{background:linear-gradient(135deg,#0c1d73,#1d1f96);border:none;}
+.jcard.hero-roas .jcard-lbl{color:rgba(255,255,255,.7);}
+.jcard.hero-roas .jcard-val{color:#fff;}
+.jcard.hero-roas .jcard-sub{color:rgba(255,255,255,.65);}
+.funil{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;overflow-x:auto;background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:20px 10px;margin-bottom:14px;}
+.fstep{flex:1 1 0;min-width:120px;text-align:center;padding:6px 10px;position:relative;}
+.fstep .fi{font-size:1.2rem;}
+.fstep .fl{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--mu);margin:6px 0 4px;}
+.fstep .fv{font-size:1.5rem;font-weight:900;color:#0c1d73;line-height:1;letter-spacing:-.5px;}
+.fstep .fc{font-size:.63rem;font-weight:700;color:#2621bf;margin-top:6px;}
+.fstep .fc.zero{color:#94a3b8;}
+.fstep:not(:last-child)::after{content:'→';position:absolute;right:-8px;top:34px;color:#cbd5e1;font-weight:900;font-size:1rem;}
+.fstep .bar{height:5px;border-radius:4px;margin-top:8px;background:linear-gradient(90deg,#2621bf,#4285f4);opacity:.9;}
+.vfilter{display:inline-flex;gap:6px;background:var(--card2);border:1px solid var(--brd);border-radius:9px;padding:4px;margin-left:auto;}
+.vfbtn{border:none;background:none;font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:800;color:var(--mu);padding:5px 12px;border-radius:6px;cursor:pointer;}
+.vfbtn.active{background:#2621bf;color:#fff;}
+.slbl.row{justify-content:flex-start;}
+.vsale-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:13px 16px;font-size:.8rem;color:#1e40af;line-height:1.55;font-weight:600;margin-bottom:14px;}
 .sales-note{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:13px 16px;font-size:.78rem;color:#9a3412;line-height:1.55;font-weight:600;margin-bottom:14px;}
 .slbl .cnt{font-size:.6rem;font-weight:800;color:var(--mu);letter-spacing:.5px;}
 .ap{display:inline-block;padding:4px 10px;border-radius:6px;font-size:.65rem;font-weight:800;letter-spacing:.4px;white-space:nowrap;}
@@ -242,6 +261,7 @@ main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.
   <button class="vtab active" onclick="setView('dash',this)">📊 Dashboard ao vivo</button>
   <button class="vtab" onclick="setView('julho',this)">📅 Resumo — Julho</button>
   <button class="vtab" onclick="setView('agosto',this)">📅 Resumo — Agosto</button>
+  <button class="vtab" onclick="setView('vendas',this)">🛒 Vendas (funil)</button>
 </div>
 
 <div id="viewDash">
@@ -311,12 +331,39 @@ main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.
   </div>
 </div>
 
+<div id="viewVendas" style="display:none">
+  <div class="jhero">
+    <div class="jhero-badge">🛒 Campanha de Vendas</div>
+    <div class="jhero-title">Vendas — Funil de Conversão</div>
+    <div class="jhero-sub" id="vPeriodo">Carregando…</div>
+  </div>
+  <div id="vNote" class="vsale-note" hidden></div>
+  <div class="slbl">Resultado da campanha de vendas</div>
+  <div class="jgrid" id="vKpis"></div>
+  <div class="slbl">Funil — da vista à venda</div>
+  <div class="funil" id="vFunil"></div>
+  <div class="slbl row">Criativos de vendas <span class="cnt" id="cntVendas" style="margin-left:8px;"></span>
+    <span class="vfilter" id="vFilter">
+      <button class="vfbtn active" onclick="setVFilter('todos',this)">Todos</button>
+      <button class="vfbtn" onclick="setVFilter('ativos',this)">Ativos</button>
+      <button class="vfbtn" onclick="setVFilter('pausados',this)">Pausados</button>
+    </span>
+  </div>
+  <div class="ctw">
+    <table class="ct"><thead><tr><th>Criativo</th><th>Status</th><th>Investido</th><th>Cliques</th><th>Visitas</th><th>Carrinho</th><th>Checkout</th><th>Vendas</th><th>Faturam.</th><th>ROAS</th><th></th></tr></thead><tbody id="vBody"></tbody></table>
+  </div>
+</div>
+
 </main>
 
 <script>
 var _MRAW=[],_lastView={mode:'preset',p:'all'},_firstLoad=true;
 const _SID="1kpPbGM1adx3KGBRN_-q0RJpNFfK0oZIyNB41u5jXWkQ",_GM="0";
 var _csvURL=function(gid){return "https://docs.google.com/spreadsheets/d/"+_SID+"/gviz/tq?tqx=out:csv&gid="+gid;};
+// ---- Fonte de VENDAS (planilha separada, aba "Meta Ads") ----
+var _SRAW=[],_salesLast="",_vFilter="todos";
+const _SALES_SID="1oKrBIFY0Xz3Iz4LM94KA7TuOq2QOkUz-rC8y7G9twcQ",_SALES_TAB="Meta Ads";
+var _salesURL=function(){return "https://docs.google.com/spreadsheets/d/"+_SALES_SID+"/gviz/tq?tqx=out:csv&sheet="+encodeURIComponent(_SALES_TAB);};
 function _sp(l){var p=[],c="",q=false;for(var i=0;i<l.length;i++){var ch=l[i];if(ch==='"')q=!q;else if(ch===","&&!q){p.push(c.trim().replace(/^"|"$/g,""));c="";}else c+=ch;}p.push(c.trim().replace(/^"|"$/g,""));return p;}
 function _brlP(s){return parseFloat(String(s).replace(/R\$\s*/,"").replace(/\./g,"").replace(",","."))||0;}
 function _intP(s){return parseInt(String(s).replace(/[.,]/g,""))||0;}
@@ -441,11 +488,21 @@ function setView(v,btn){
   document.querySelectorAll('.vtab').forEach(function(b){b.classList.remove('active');});
   if(btn)btn.classList.add('active');
   var ctrl=document.querySelector('.ctrl');
-  var views={dash:'viewDash',julho:'viewJulho',agosto:'viewAgosto'};
+  var views={dash:'viewDash',julho:'viewJulho',agosto:'viewAgosto',vendas:'viewVendas'};
   Object.keys(views).forEach(function(k){var e=document.getElementById(views[k]);if(e)e.style.display=(k===v?'block':'none');});
   if(ctrl)ctrl.style.display=(v==='dash'?'flex':'none');
   if(v==='julho')renderJulho();
   if(v==='agosto')renderAgosto();
+  if(v==='vendas')renderVendas();
+}
+async function loadSales(){
+  try{
+    var r=await fetch(_salesURL()+"&_="+Date.now());
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    _SRAW=_parseSales(await r.text());
+    var d=_SRAW.map(function(x){return x.date;}).filter(Boolean).sort();_salesLast=d.length?d[d.length-1]:"";
+    renderVendas();
+  }catch(e){console.error('Erro ao buscar vendas:',e);var p=document.getElementById('vPeriodo');if(p)p.textContent='Erro ao carregar dados de vendas (verifique o compartilhamento da planilha).';}
 }
 function renderJulho(){
   var rows=_MRAW.filter(function(r){return r.date&&r.date.slice(0,7)==='2026-07'&&r.tipo!=='vendas';});
@@ -515,6 +572,69 @@ function renderAgosto(){
   var jrk=document.getElementById('aRank');
   if(jrk)jrk.innerHTML=sorted.map(function(a,i){var h=pct(a.viz3s,a.imp),r=pct(a.p25,a.viz3s),ac=acM(a.invest,h,r);return '<tr><td class="cname">'+(i===0?'🏆 ':'')+a.name+'</td><td class="nr">'+bF(a.invest)+'</td><td class="nr">'+a.viz3s.toLocaleString("pt-BR")+'</td><td class="nr rt-'+hcl(h)+'">'+h+'%</td><td class="nr rt-'+rcl(r)+'">'+r+'%</td><td><span class="ap ac-'+ac[0]+'">'+ac[1]+'</span></td></tr>';}).join('');
 }
+// ===== VENDAS (funil) =====
+function _parseSales(txt){
+  var rows=[];
+  txt.split("\n").slice(1).forEach(function(l){
+    if(!l.trim())return;var p=_sp(l);if(p.length<13||!p[3])return;
+    var _dd=(p[0]||"").split("/");var _iso=_dd.length===3?_dd[2]+"-"+_dd[1]+"-"+_dd[0]:"";
+    rows.push({date:_iso,camp:p[1],publico:(p[2]||"").trim(),name:p[3],invest:_brlP(p[4]),imp:_intP(p[5]),cliques:_intP(p[6]),visitas:_intP(p[7]),carrinho:_intP(p[8]),valcar:_brlP(p[9]),checkout:_intP(p[10]),vendas:_intP(p[11]),fat:_brlP(p[12]),url:(p[13]||"").trim()});
+  });
+  return rows;
+}
+function _aggSales(rows){
+  var agg={},dmin=null,dmax=null;
+  rows.forEach(function(r){
+    if(r.date){if(!dmin||r.date<dmin)dmin=r.date;if(!dmax||r.date>dmax)dmax=r.date;}
+    if(!agg[r.name])agg[r.name]={name:r.name,publico:r.publico,url:r.url,invest:0,imp:0,cliques:0,visitas:0,carrinho:0,checkout:0,vendas:0,fat:0,lastDate:""};
+    var a=agg[r.name];a.invest+=r.invest;a.imp+=r.imp;a.cliques+=r.cliques;a.visitas+=r.visitas;a.carrinho+=r.carrinho;a.checkout+=r.checkout;a.vendas+=r.vendas;a.fat+=r.fat;if(r.date){if(r.url)a.url=r.url;if(r.date>a.lastDate)a.lastDate=r.date;}
+  });
+  return {ads:Object.values(agg),dmin:dmin,dmax:dmax};
+}
+function _isAtivoS(ld){if(!ld||!_salesLast)return true;var t=new Date(_salesLast);t.setDate(t.getDate()-2);return ld>=t.toISOString().slice(0,10);}
+var _vAds=[];
+function renderVendas(){
+  var bF=function(v){return"R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});};
+  var nF=function(v){return v.toLocaleString("pt-BR");};
+  var _fb=function(s){var x=s.split("-");return x[2]+"/"+x[1]+"/"+x[0];};
+  var md=_aggSales(_SRAW);_vAds=md.ads;
+  var per=document.getElementById('vPeriodo');
+  if(!_vAds.length){if(per)per.textContent='Ainda não há dados de vendas na planilha.';var vb0=document.getElementById('vBody');if(vb0)vb0.innerHTML='<tr><td colspan="11" style="text-align:center;color:#6272a0;padding:26px;">Sem dados.</td></tr>';['vKpis','vFunil'].forEach(function(id){var e=document.getElementById(id);if(e)e.innerHTML='';});return;}
+  var ti=0,imp=0,clk=0,vis=0,car=0,ck=0,vd=0,fat=0;
+  _vAds.forEach(function(a){ti+=a.invest;imp+=a.imp;clk+=a.cliques;vis+=a.visitas;car+=a.carrinho;ck+=a.checkout;vd+=a.vendas;fat+=a.fat;});
+  if(per)per.textContent='De '+_fb(md.dmin)+' a '+_fb(md.dmax)+' · '+_vAds.length+' criativos';
+  var roas=ti?fat/ti:0,cpa=vd?ti/vd:0,ticket=vd?fat/vd:0,cpc=clk?ti/clk:0;
+  // Nota quando ainda não há vendas
+  var note=document.getElementById('vNote');
+  if(note){if(vd===0){note.hidden=false;note.innerHTML='🟦 A campanha de vendas começou em <b>'+_fb(md.dmin)+'</b> e <b>ainda não registrou vendas</b> na planilha. Mas o funil já mostra sinais: <b>'+nF(car)+' adições ao carrinho</b> e <b>'+nF(ck)+' checkout(s) iniciados</b>. Assim que sair a 1ª venda, ROAS, CPA e ticket aparecem aqui automaticamente.';}else{note.hidden=true;}}
+  // KPIs
+  var js=document.getElementById('vKpis');
+  function jc(cls,lbl,val,sub){return'<div class="jcard '+(cls||'')+'"><div class="jcard-lbl">'+lbl+'</div><div class="jcard-val">'+val+'</div><div class="jcard-sub">'+sub+'</div></div>';}
+  if(js)js.innerHTML=jc('','Investido',bF(ti),'total na campanha de vendas')
+    +jc('','Vendas',nF(vd),vd?'pedidos no período':'nenhuma venda ainda')
+    +jc('','Faturamento',bF(fat),'receita atribuída')
+    +jc('hero-roas','ROAS',vd?roas.toFixed(2).replace('.',',')+'x':'—',vd?'retorno por real investido':'aguardando 1ª venda')
+    +jc('','CPA',vd?bF(cpa):'—',vd?'custo por venda':'—')
+    +jc('','Ticket médio',vd?bF(ticket):'—',vd?'faturamento por venda':'—');
+  // Funil
+  var steps=[['👁️','Impressões',imp],['🖱️','Cliques',clk],['🌐','Visitas ao site',vis],['🛒','Add. carrinho',car],['💳','Checkout',ck],['✅','Vendas',vd]];
+  var fu=document.getElementById('vFunil');
+  if(fu)fu.innerHTML=steps.map(function(s,i){var prev=i>0?steps[i-1][2]:0;var conv=i===0?100:(prev?Math.round(s[2]/prev*1000)/10:0);var w=Math.max(6,Math.min(100,conv));var fc=i===0?'topo do funil':(conv+'% do passo anterior');return'<div class="fstep"><div class="fi">'+s[0]+'</div><div class="fl">'+s[1]+'</div><div class="fv">'+nF(s[2])+'</div><div class="fc'+(s[2]===0?' zero':'')+'">'+fc+'</div><div class="bar" style="width:'+w+'%;margin-left:auto;margin-right:auto;"></div></div>';}).join('');
+  // Tabela (respeita filtro)
+  var act=_vAds.filter(function(a){return _isAtivoS(a.lastDate);}).length;
+  var cnt=document.getElementById('cntVendas');if(cnt)cnt.textContent='· '+act+' de '+_vAds.length+' ativos';
+  _renderVBody();
+}
+function _renderVBody(){
+  var bF=function(v){return"R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});};
+  var nF=function(v){return v.toLocaleString("pt-BR");};
+  var list=_vAds.filter(function(a){var on=_isAtivoS(a.lastDate);return _vFilter==='todos'||(_vFilter==='ativos'&&on)||(_vFilter==='pausados'&&!on);});
+  list=list.slice().sort(function(a,b){var av=_isAtivoS(a.lastDate)?1:0,bv=_isAtivoS(b.lastDate)?1:0;return bv-av||b.invest-a.invest;});
+  var body=document.getElementById('vBody');if(!body)return;
+  if(!list.length){body.innerHTML='<tr><td colspan="11" style="text-align:center;color:#6272a0;padding:26px;">Nenhum criativo nesse filtro.</td></tr>';return;}
+  body.innerHTML=list.map(function(a){var st=_isAtivoS(a.lastDate)?'<span class="stativo">Ativo</span>':'<span class="stpausado">Pausado</span>';var roas=a.invest?(a.fat/a.invest):0;return'<tr><td class="cname">'+a.name+'</td><td>'+st+'</td><td class="nr">'+bF(a.invest)+'</td><td class="nr">'+nF(a.cliques)+'</td><td class="nr">'+nF(a.visitas)+'</td><td class="nr">'+nF(a.carrinho)+'</td><td class="nr">'+nF(a.checkout)+'</td><td class="nr"><b>'+nF(a.vendas)+'</b></td><td class="nr">'+bF(a.fat)+'</td><td class="nr">'+(a.vendas?roas.toFixed(2).replace('.',',')+'x':'—')+'</td><td>'+(a.url?'<a class="abtn" href="'+a.url+'" target="_blank">&#8599; Anuncio</a>':'')+'</td></tr>';}).join('');
+}
+function setVFilter(f,btn){_vFilter=f;document.querySelectorAll('#vFilter .vfbtn').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');_renderVBody();}
 async function loadData(){
   try{
     var r=await fetch(_csvURL(_GM)+"&_="+Date.now());
@@ -527,8 +647,8 @@ async function loadData(){
     var lu=document.getElementById('lastUpd');if(lu)lu.innerHTML='Atualiza sozinha a cada 5 min · Última atualização: <b>'+new Date().toLocaleString('pt-BR')+'</b>';
   }catch(e){console.error('Erro ao buscar planilha:',e);var ml=document.getElementById('metaLbl');if(ml)ml.textContent='Meta Ads — Brand Awareness · erro ao carregar dados (verifique o compartilhamento da planilha)';var ms=document.querySelector('.mkstrip');if(ms)ms.innerHTML='<div class="mkpi" style="grid-column:1/-1;text-align:center;color:#ef4444;font-weight:700;">Não foi possível carregar os dados da planilha.</div>';var lu=document.getElementById('lastUpd');if(lu)lu.innerHTML='Falha ao atualizar — nova tentativa em 5 min · '+new Date().toLocaleString('pt-BR');}
 }
-loadData();
-setInterval(loadData,300000);
+loadData();loadSales();
+setInterval(function(){loadData();loadSales();},300000);
 </script>
 </body>
 </html>
