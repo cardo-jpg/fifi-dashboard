@@ -172,6 +172,16 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 .vfbtn.active{background:#2621bf;color:#fff;}
 .slbl.row{justify-content:flex-start;}
 .vsale-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:13px 16px;font-size:.8rem;color:#1e40af;line-height:1.55;font-weight:600;margin-bottom:14px;}
+.dwrap{background:var(--card);border:1px solid var(--brd);border-radius:16px;margin-bottom:14px;overflow:hidden;}
+.dgrow{display:flex;gap:13px;align-items:flex-start;padding:14px 18px;border-bottom:1px solid var(--brd);}
+.dgrow:last-child{border-bottom:none;}
+.dgdot{font-size:1.15rem;flex-shrink:0;line-height:1.35;}
+.dgtxt{font-size:.86rem;line-height:1.55;color:#334155;font-weight:600;}
+.dgtxt b{color:#0c1d73;font-weight:900;}
+.dgq{font-weight:900;color:#0c1d73;}
+.dgm{font-weight:900;}
+.dgm.g{color:#059646;} .dgm.y{color:#b45309;} .dgm.r{color:#dc2626;}
+.dgtag{display:inline-block;margin-left:6px;padding:1px 9px;border-radius:100px;font-size:.58rem;font-weight:800;letter-spacing:.5px;background:rgba(220,38,38,.1);color:#dc2626;text-transform:uppercase;vertical-align:middle;}
 .sales-note{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:13px 16px;font-size:.78rem;color:#9a3412;line-height:1.55;font-weight:600;margin-bottom:14px;}
 .slbl .cnt{font-size:.6rem;font-weight:800;color:var(--mu);letter-spacing:.5px;}
 .ap{display:inline-block;padding:4px 10px;border-radius:6px;font-size:.65rem;font-weight:800;letter-spacing:.4px;white-space:nowrap;}
@@ -342,6 +352,9 @@ main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.
   <div class="jgrid" id="vKpis"></div>
   <div class="slbl">Funil — da vista à venda</div>
   <div class="funil" id="vFunil"></div>
+  <div class="slbl">Diagnóstico — onde está travando</div>
+  <div id="vDiagHead"></div>
+  <div class="dwrap" id="vDiagRows"></div>
   <div class="slbl row">Criativos de vendas <span class="cnt" id="cntVendas" style="margin-left:8px;"></span>
     <span class="vfilter" id="vFilter">
       <button class="vfbtn active" onclick="setVFilter('todos',this)">Todos</button>
@@ -620,6 +633,30 @@ function renderVendas(){
   var steps=[['👁️','Impressões',imp],['🖱️','Cliques',clk],['🌐','Visitas ao site',vis],['🛒','Add. carrinho',car],['💳','Checkout',ck],['✅','Vendas',vd]];
   var fu=document.getElementById('vFunil');
   if(fu)fu.innerHTML=steps.map(function(s,i){var prev=i>0?steps[i-1][2]:0;var conv=i===0?100:(prev?Math.round(s[2]/prev*1000)/10:0);var w=Math.max(6,Math.min(100,conv));var fc=i===0?'topo do funil':(conv+'% do passo anterior');return'<div class="fstep"><div class="fi">'+s[0]+'</div><div class="fl">'+s[1]+'</div><div class="fv">'+nF(s[2])+'</div><div class="fc'+(s[2]===0?' zero':'')+'">'+fc+'</div><div class="bar" style="width:'+w+'%;margin-left:auto;margin-right:auto;"></div></div>';}).join('');
+  // ---- Diagnóstico automático do funil (linguagem simples) ----
+  var pc=function(a,b){return b?Math.round(a/b*1000)/10:0;};
+  var ctr=pc(clk,imp),cartClk=pc(car,clk),visClk=pc(vis,clk),saleCart=pc(vd,car);
+  var rmkt=_SRAW.some(function(r){return /advgt|rmkt|remarket|retarget/i.test(r.publico);});
+  var cls=function(v,g,y){return v>=g?'g':v>=y?'y':'r';};
+  var dt={g:'🟢',y:'🟡',r:'🔴'};
+  var rows=[];
+  // 1) criativo (CTR)
+  (function(){var c=cls(ctr,1.2,0.6);var vd_={g:'O criativo está atraindo bem.',y:'Ok, mas dá pra melhorar o gancho.',r:'Criativo fraco — não está chamando cliques.'}[c];rows.push({d:dt[c],h:'<span class="dgq">O anúncio chama atenção?</span> De cada 100 pessoas que veem, <b>'+ctr+'</b> clicam <span class="dgm '+c+'">(CTR '+ctr+'%)</span>. '+vd_+(c!=='g'?'<span class="dgtag">Criativo</span>':'')});})();
+  // 2) oferta/preço (clique -> carrinho) — sinal principal
+  (function(){var c=cls(cartClk,3,1.5);var base='<span class="dgq">Quem clica coloca no carrinho?</span> De cada 100 cliques, só <b>'+cartClk+'</b> colocam no carrinho <span class="dgm '+c+'">('+nF(car)+' de '+nF(clk)+')</span>. ';var vd_={g:'Boa taxa de interesse.',y:'Abaixo do ideal — vale revisar oferta e página.',r:'Muito fraco — o gargalo está na <b>oferta, no preço ou na página</b> do produto.'}[c];var extra=(c==='r'&&rmkt)?' Mais grave ainda por ser público de <b>remarketing</b> (ADVGT), que deveria comprar mais fácil.':'';rows.push({d:dt[c],h:base+vd_+extra+(c!=='g'?'<span class="dgtag">Oferta · Preço · Página</span>':'')});})();
+  // 3) checkout / finalização
+  (function(){if(car<5){rows.push({d:'🟡',h:'<span class="dgq">Quem coloca no carrinho compra?</span> Ainda são poucos carrinhos (<b>'+nF(car)+'</b>) pra concluir — precisa de mais dados. Até agora <b>'+nF(ck)+'</b> checkout(s) e <b>'+nF(vd)+'</b> venda(s).'});return;}var c=cls(saleCart,20,8);var vd_={g:'Boa finalização.',y:'Metade se perde no caminho — conferir checkout e frete.',r:'Quase ninguém finaliza — <b>checkout, frete ou preço final</b> estão travando.'}[c];rows.push({d:dt[c],h:'<span class="dgq">Quem coloca no carrinho compra?</span> Dos <b>'+nF(car)+'</b> no carrinho, <b>'+nF(vd)+'</b> compraram <span class="dgm '+c+'">('+saleCart+'%)</span>. '+vd_+(c!=='g'?'<span class="dgtag">Checkout · Preço final</span>':'')});})();
+  // 4) aviso de rastreamento (clique -> visita)
+  if(clk>=20&&visClk<40){rows.push({d:'⚠️',h:'<span class="dgq">Atenção ao rastreamento.</span> Só <b>'+nF(vis)+'</b> visitas para <b>'+nF(clk)+'</b> cliques. O site/pixel provavelmente <b>não está contando todas as visitas</b> — corrigir isso é prioridade pra confiar nos números do meio do funil.<span class="dgtag">Rastreamento</span>'});}
+  var dr=document.getElementById('vDiagRows');if(dr)dr.innerHTML=rows.map(function(r){return'<div class="dgrow"><div class="dgdot">'+r.d+'</div><div class="dgtxt">'+r.h+'</div></div>';}).join('');
+  // Veredito nº1 (headline)
+  var head,hc;
+  if(clk>=50&&cartClk<1.5){hc='ruim';head=['🎯','Prioridade nº1: destravar o carrinho','A campanha <b>traz gente</b> (cliques ok), mas quase ninguém coloca no carrinho. O problema não é alcance — é o que a pessoa encontra: <b>oferta, preço e página do produto</b>. É onde mexer primeiro'+(visClk<40?'. Em 2º: consertar o rastreamento do site':'')+'.'];}
+  else if(ctr<0.6){hc='ruim';head=['🎯','Prioridade nº1: o criativo','Poucos cliques para tanta gente vendo — o <b>criativo/gancho</b> não está atraindo. Testar novas peças antes de escalar verba.'];}
+  else if(car>=5&&saleCart<8){hc='ruim';head=['🎯','Prioridade nº1: o checkout','As pessoas colocam no carrinho mas não finalizam — foco em <b>checkout, frete e preço final</b>.'];}
+  else if(vd>0){hc='bom';head=['✅','Funil saudável','As etapas estão convertendo bem. Manter e escalar o que funciona.'];}
+  else{hc='medio';head=['🟡','Campanha ainda aquecendo','Poucos dados pra um veredito firme. Acompanhar as próximas conversões.'];}
+  var dh=document.getElementById('vDiagHead');if(dh)dh.innerHTML='<div class="diag diag-'+hc+'"><div class="diag-ico">'+head[0]+'</div><div><div class="diag-title">'+head[1]+'</div><div class="diag-desc">'+head[2]+'</div></div></div>';
   // Tabela (respeita filtro)
   var act=_vAds.filter(function(a){return _isAtivoS(a.lastDate);}).length;
   var cnt=document.getElementById('cntVendas');if(cnt)cnt.textContent='· '+act+' de '+_vAds.length+' ativos';
