@@ -182,6 +182,17 @@ main{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 32p
 .dgm{font-weight:900;}
 .dgm.g{color:#059646;} .dgm.y{color:#b45309;} .dgm.r{color:#dc2626;}
 .dgtag{display:inline-block;margin-left:6px;padding:1px 9px;border-radius:100px;font-size:.58rem;font-weight:800;letter-spacing:.5px;background:rgba(220,38,38,.1);color:#dc2626;text-transform:uppercase;vertical-align:middle;}
+.dgtag.info{background:rgba(38,33,191,.1);color:#2621bf;}
+/* funil triângulo invertido */
+.vfunnel{display:flex;flex-direction:column;align-items:center;background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:22px 16px;margin-bottom:14px;}
+.vfstage{max-width:840px;min-width:118px;color:#fff;border-radius:11px;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(90deg,#1d1f96,#4285f4);box-shadow:0 5px 16px rgba(38,33,191,.16);overflow:hidden;}
+.vfstage .l{font-weight:800;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vfstage .n{font-size:1.22rem;font-weight:900;white-space:nowrap;}
+.vfstage.goal{background:linear-gradient(90deg,#047857,#10b981);}
+.vfstage.goal.off{background:linear-gradient(90deg,#94a3b8,#cbd5e1);color:#1e293b;}
+.vfarrow{font-size:.66rem;font-weight:800;color:var(--mu);padding:6px 0;text-align:center;}
+.vfarrow.bad{color:#dc2626;}
+@media(max-width:600px){.vfstage{padding:10px 14px;}.vfstage .l{font-size:.72rem;}.vfstage .n{font-size:1.02rem;}}
 .sales-note{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:13px 16px;font-size:.78rem;color:#9a3412;line-height:1.55;font-weight:600;margin-bottom:14px;}
 .slbl .cnt{font-size:.6rem;font-weight:800;color:var(--mu);letter-spacing:.5px;}
 .ap{display:inline-block;padding:4px 10px;border-radius:6px;font-size:.65rem;font-weight:800;letter-spacing:.4px;white-space:nowrap;}
@@ -351,7 +362,7 @@ main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.
   <div class="slbl">Resultado da campanha de vendas</div>
   <div class="jgrid" id="vKpis"></div>
   <div class="slbl">Funil — da vista à venda</div>
-  <div class="funil" id="vFunil"></div>
+  <div class="vfunnel" id="vFunil"></div>
   <div class="slbl">Diagnóstico — onde está travando</div>
   <div id="vDiagHead"></div>
   <div class="dwrap" id="vDiagRows"></div>
@@ -632,7 +643,13 @@ function renderVendas(){
   // Funil
   var steps=[['👁️','Impressões',imp],['🖱️','Cliques',clk],['🌐','Visitas ao site',vis],['🛒','Add. carrinho',car],['💳','Checkout',ck],['✅','Vendas',vd]];
   var fu=document.getElementById('vFunil');
-  if(fu)fu.innerHTML=steps.map(function(s,i){var prev=i>0?steps[i-1][2]:0;var conv=i===0?100:(prev?Math.round(s[2]/prev*1000)/10:0);var w=Math.max(6,Math.min(100,conv));var fc=i===0?'topo do funil':(conv+'% do passo anterior');return'<div class="fstep"><div class="fi">'+s[0]+'</div><div class="fl">'+s[1]+'</div><div class="fv">'+nF(s[2])+'</div><div class="fc'+(s[2]===0?' zero':'')+'">'+fc+'</div><div class="bar" style="width:'+w+'%;margin-left:auto;margin-right:auto;"></div></div>';}).join('');
+  if(fu)fu.innerHTML=steps.map(function(s,i){
+    var w=100-i*14; // largura decrescente = triângulo invertido
+    var prev=i>0?steps[i-1][2]:0;var conv=i===0?null:(prev?Math.round(s[2]/prev*1000)/10:0);
+    var arrow=i===0?'':'<div class="vfarrow'+(conv<20?' bad':'')+'">↓ '+conv+'% do passo anterior</div>';
+    var last=i===steps.length-1;var gcls=last?(s[2]>0?' goal':' goal off'):'';
+    return arrow+'<div class="vfstage'+gcls+'" style="width:'+w+'%"><span class="l">'+s[0]+' '+s[1]+'</span><span class="n">'+nF(s[2])+'</span></div>';
+  }).join('');
   // ---- Diagnóstico automático do funil (linguagem simples) ----
   var pc=function(a,b){return b?Math.round(a/b*1000)/10:0;};
   var ctr=pc(clk,imp),cartClk=pc(car,clk),visClk=pc(vis,clk),saleCart=pc(vd,car);
@@ -640,8 +657,10 @@ function renderVendas(){
   var cls=function(v,g,y){return v>=g?'g':v>=y?'y':'r';};
   var dt={g:'🟢',y:'🟡',r:'🔴'};
   var rows=[];
-  // 1) criativo (CTR)
-  (function(){var c=cls(ctr,1.2,0.6);var vd_={g:'O criativo está atraindo bem.',y:'Ok, mas dá pra melhorar o gancho.',r:'Criativo fraco — não está chamando cliques.'}[c];rows.push({d:dt[c],h:'<span class="dgq">O anúncio chama atenção?</span> De cada 100 pessoas que veem, <b>'+ctr+'</b> clicam <span class="dgm '+c+'">(CTR '+ctr+'%)</span>. '+vd_+(c!=='g'?'<span class="dgtag">Criativo</span>':'')});})();
+  // 1) criativo (CTR) — atrair clique é só o começo
+  (function(){var c=cls(ctr,1.2,0.6);var vd_={g:'Traz cliques (CTR ok) — mas atrair clique é só o começo; o criativo precisa levar à compra.',y:'Traz alguns cliques, mas o criativo precisa melhorar bastante.',r:'Criativo fraco — quase não chama cliques.'}[c];rows.push({d:c==='g'?'🟡':dt[c],h:'<span class="dgq">O anúncio chama atenção?</span> De cada 100 pessoas que veem, <b>'+ctr+'</b> clicam <span class="dgm '+c+'">(CTR '+ctr+'%)</span>. '+vd_+'<span class="dgtag">Criativo</span>'});})();
+  // 1b) formato do criativo: estáticas x vídeos (embasa "fazer mais artes estáticas")
+  (function(){var isI=function(a){return /_IMG_/i.test(a.name);},isV=function(a){return /_VID_/i.test(a.name);};var sc=function(l,k){return l.reduce(function(s,a){return s+(a[k]||0);},0);};var I=_vAds.filter(isI),V=_vAds.filter(isV);if(!I.length||!V.length)return;var iC=sc(I,'cliques'),vC=sc(V,'cliques'),iK=sc(I,'carrinho'),vK=sc(V,'carrinho');var estMelhor=iC>=vC;var rec=estMelhor?'As <b>artes estáticas</b> vêm performando melhor — <b>produzir mais artes estáticas</b> e renovar o banco de criativos.':'Os <b>vídeos</b> vêm performando melhor — produzir mais vídeos, sem parar as estáticas.';rows.push({d:'🎨',h:'<span class="dgq">Estáticas x vídeos.</span> Artes estáticas: <b>'+nF(iC)+'</b> cliques e <b>'+nF(iK)+'</b> carrinho(s). Vídeos: <b>'+nF(vC)+'</b> cliques e <b>'+nF(vK)+'</b>. '+rec+'<span class="dgtag info">Criativo</span>'});})();
   // 2) oferta/preço (clique -> carrinho) — sinal principal
   (function(){var c=cls(cartClk,3,1.5);var base='<span class="dgq">Quem clica coloca no carrinho?</span> De cada 100 cliques, só <b>'+cartClk+'</b> colocam no carrinho <span class="dgm '+c+'">('+nF(car)+' de '+nF(clk)+')</span>. ';var vd_={g:'Boa taxa de interesse.',y:'Abaixo do ideal — vale revisar oferta e página.',r:'Muito fraco — o gargalo está na <b>oferta, no preço ou na página</b> do produto.'}[c];var extra=(c==='r'&&rmkt)?' Mais grave ainda por ser público de <b>remarketing</b> (ADVGT), que deveria comprar mais fácil.':'';rows.push({d:dt[c],h:base+vd_+extra+(c!=='g'?'<span class="dgtag">Oferta · Preço · Página</span>':'')});})();
   // 3) checkout / finalização
@@ -651,7 +670,7 @@ function renderVendas(){
   var dr=document.getElementById('vDiagRows');if(dr)dr.innerHTML=rows.map(function(r){return'<div class="dgrow"><div class="dgdot">'+r.d+'</div><div class="dgtxt">'+r.h+'</div></div>';}).join('');
   // Veredito nº1 (headline)
   var head,hc;
-  if(clk>=50&&cartClk<1.5){hc='ruim';head=['🎯','Prioridade nº1: destravar o carrinho','A campanha <b>traz gente</b> (cliques ok), mas quase ninguém coloca no carrinho. O problema não é alcance — é o que a pessoa encontra: <b>oferta, preço e página do produto</b>. É onde mexer primeiro'+(visClk<40?'. Em 2º: consertar o rastreamento do site':'')+'.'];}
+  if(clk>=50&&cartClk<1.5){hc='ruim';head=['🎯','Prioridades: 1ª venda + criativos','Dois focos agora: <b>(1) destravar a 1ª venda</b> — mexer em <b>oferta, preço e página do produto</b>, porque a campanha traz gente mas quase ninguém coloca no carrinho; e <b>(2) melhorar os criativos</b>, que ainda convertem pouco — <b>produzir mais artes estáticas</b> (vêm performando melhor que os vídeos) e renovar as peças'+(visClk<40?'. Em paralelo, consertar o rastreamento do site':'')+'.'];}
   else if(ctr<0.6){hc='ruim';head=['🎯','Prioridade nº1: o criativo','Poucos cliques para tanta gente vendo — o <b>criativo/gancho</b> não está atraindo. Testar novas peças antes de escalar verba.'];}
   else if(car>=5&&saleCart<8){hc='ruim';head=['🎯','Prioridade nº1: o checkout','As pessoas colocam no carrinho mas não finalizam — foco em <b>checkout, frete e preço final</b>.'];}
   else if(vd>0){hc='bom';head=['✅','Funil saudável','As etapas estão convertendo bem. Manter e escalar o que funciona.'];}
