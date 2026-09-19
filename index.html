@@ -231,6 +231,67 @@ main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.
   .efet-val{font-size:1.4rem;}
   main{padding:16px 12px 56px;}
 }
+/* ============ Aba VENDAS — estilo editorial (inspirado na dash Spitz) ============ */
+#viewVendas{--ink:#14241e;--mut:#5b6b60;--faint:#8a998f;--line:#e7ebe4;--paper:#fff;--acc:#0f7a6b;--accd:#0b5a4f;--good:#2c8c5a;--bad:#c0492e;--warn:#a97a10;--serif:ui-serif,Georgia,"Times New Roman",serif;color:var(--ink);}
+#viewVendas .vhead{padding:4px 2px 20px;border-bottom:1px solid var(--line);margin-bottom:8px;}
+#viewVendas .vkicker{font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-bottom:10px;}
+#viewVendas .vtitle{font-family:var(--serif);font-size:2.25rem;font-weight:700;letter-spacing:-.015em;color:var(--ink);line-height:1.03;}
+#viewVendas .vsub{font-size:.86rem;color:var(--mut);margin-top:9px;font-weight:600;}
+#viewVendas .slbl{font-size:.67rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accd);margin:30px 0 14px;}
+#viewVendas .slbl::after{background:var(--line);}
+#viewVendas .vcallout{background:#f3f8f4;border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:12px;padding:15px 18px;font-size:.85rem;color:#33463c;line-height:1.62;font-weight:500;margin-bottom:4px;}
+#viewVendas .vcallout b{color:var(--accd);font-weight:800;}
+#viewVendas .jgrid{gap:14px;}
+#viewVendas .jcard{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 1px 2px rgba(19,36,30,.04),0 14px 32px rgba(19,36,30,.05);}
+#viewVendas .jcard::before{display:none;}
+#viewVendas .jcard-lbl{font-size:.63rem;letter-spacing:.1em;color:var(--mut);font-weight:800;margin-bottom:12px;}
+#viewVendas .jcard-val{font-family:var(--serif);font-size:2rem;font-weight:700;color:var(--ink);letter-spacing:-.01em;}
+#viewVendas .jcard-sub{font-size:.71rem;color:var(--faint);margin-top:8px;font-weight:500;}
+#viewVendas .jcard.hero-roas{background:var(--paper);border-color:rgba(15,122,107,.4);box-shadow:0 1px 2px rgba(11,90,79,.06),0 14px 32px rgba(11,90,79,.09);}
+#viewVendas .jcard.hero-roas .jcard-lbl{color:var(--acc);}
+#viewVendas .jcard.hero-roas .jcard-val{color:var(--accd);}
+#viewVendas .jcard.hero-roas .jcard-sub{color:var(--mut);}
+#viewVendas .vfunnel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:28px 18px;box-shadow:0 1px 2px rgba(19,36,30,.04),0 14px 32px rgba(19,36,30,.05);}
+#viewVendas .vfstage{color:#fff;border-radius:12px;padding:14px 26px;box-shadow:none;}
+#viewVendas .vfstage .l{font-size:.8rem;font-weight:700;letter-spacing:.01em;}
+#viewVendas .vfstage .n{font-family:var(--serif);font-size:1.45rem;font-weight:700;}
+#viewVendas .vfstage.goal{background:var(--good)!important;}
+#viewVendas .vfstage.goal.off{background:#dfe4de!important;color:#5b6b60;}
+#viewVendas .vfarrow{color:var(--faint);font-weight:700;font-size:.68rem;padding:7px 0;}
+#viewVendas .vfarrow.bad{color:var(--bad);}
+#viewVendas .diag{border-radius:16px;padding:20px 24px;gap:18px;}
+#viewVendas .diag-ruim{background:#fbf1ee;border:1px solid #e7c9c0;}
+#viewVendas .diag-ruim .diag-title{color:var(--bad);}
+#viewVendas .diag-medio{background:#fbf6ea;border:1px solid #e8dcbf;}
+#viewVendas .diag-medio .diag-title{color:var(--warn);}
+#viewVendas .diag-bom{background:#eef5ef;border:1px solid #cfe2d3;}
+#viewVendas .diag-bom .diag-title{color:var(--good);}
+#viewVendas .diag-title{font-family:var(--serif);font-size:1.2rem;font-weight:700;margin-bottom:5px;}
+#viewVendas .diag-desc{color:#4a5a50;font-weight:500;line-height:1.6;}
+#viewVendas .diag-desc b{color:var(--ink);font-weight:800;}
+#viewVendas .diag-ico{font-size:1.7rem;}
+#viewVendas .dwrap{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(19,36,30,.04),0 14px 32px rgba(19,36,30,.05);}
+#viewVendas .dgrow{border-bottom:1px solid var(--line);padding:16px 22px;}
+#viewVendas .dgtxt{color:#3f4f45;font-weight:500;}
+#viewVendas .dgtxt b,#viewVendas .dgq{color:var(--ink);font-weight:800;}
+#viewVendas .dgtag{background:rgba(192,73,46,.1);color:var(--bad);}
+#viewVendas .dgtag.info{background:rgba(15,122,107,.12);color:var(--accd);}
+#viewVendas .dgm.g{color:var(--good);}#viewVendas .dgm.y{color:var(--warn);}#viewVendas .dgm.r{color:var(--bad);}
+#viewVendas .ctw{border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(19,36,30,.04),0 14px 32px rgba(19,36,30,.05);}
+#viewVendas .ct thead tr{background:#f4f7f4;}
+#viewVendas .ct thead th{color:var(--mut);letter-spacing:.08em;}
+#viewVendas .ct tbody td{color:#3f4f45;border-bottom:1px solid var(--line);}
+#viewVendas .ct .cname{color:var(--ink);}
+#viewVendas .ct tbody tr:hover{background:rgba(15,122,107,.04);}
+#viewVendas .ct .nr{font-variant-numeric:tabular-nums;}
+#viewVendas .vfilter{background:#eef2ee;border-color:var(--line);}
+#viewVendas .vfbtn{color:var(--mut);}
+#viewVendas .vfbtn.active{background:var(--accd);color:#fff;}
+#viewVendas .cnt{color:var(--mut);}
+#viewVendas .abtn{background:#f3f6f3;border-color:var(--line);color:var(--mut);}
+#viewVendas .abtn:hover{border-color:var(--acc);color:var(--acc);}
+#viewVendas .stativo{color:var(--good);}
+@media(max-width:600px){#viewVendas .vtitle{font-size:1.7rem;}}
 </style>
 </head>
 <body>
@@ -353,13 +414,13 @@ main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.
 </div>
 
 <div id="viewVendas" style="display:none">
-  <div class="jhero">
-    <div class="jhero-badge">🛒 Campanha de Vendas</div>
-    <div class="jhero-title">Vendas — Funil de Conversão</div>
-    <div class="jhero-sub" id="vPeriodo">Carregando…</div>
+  <div class="vhead">
+    <div class="vkicker">Campanha de Vendas · FIFI</div>
+    <h2 class="vtitle">Funil de conversão</h2>
+    <div class="vsub" id="vPeriodo">Carregando…</div>
   </div>
-  <div id="vNote" class="vsale-note" hidden></div>
-  <div class="slbl">Resultado da campanha de vendas</div>
+  <div id="vNote" class="vcallout" hidden></div>
+  <div class="slbl">Resultado da campanha</div>
   <div class="jgrid" id="vKpis"></div>
   <div class="slbl">Funil — da vista à venda</div>
   <div class="vfunnel" id="vFunil"></div>
@@ -630,7 +691,7 @@ function renderVendas(){
   var roas=ti?fat/ti:0,cpa=vd?ti/vd:0,ticket=vd?fat/vd:0,cpc=clk?ti/clk:0;
   // Nota quando ainda não há vendas
   var note=document.getElementById('vNote');
-  if(note){if(vd===0){note.hidden=false;note.innerHTML='🟦 A campanha de vendas começou em <b>'+_fb(md.dmin)+'</b> e <b>ainda não registrou vendas</b> na planilha. Mas o funil já mostra sinais: <b>'+nF(car)+' adições ao carrinho</b> e <b>'+nF(ck)+' checkout(s) iniciados</b>. Assim que sair a 1ª venda, ROAS, CPA e ticket aparecem aqui automaticamente.';}else{note.hidden=true;}}
+  if(note){if(vd===0){note.hidden=false;note.innerHTML='A campanha de vendas começou em <b>'+_fb(md.dmin)+'</b> e <b>ainda não registrou vendas</b> na planilha. Mas o funil já mostra sinais: <b>'+nF(car)+' adições ao carrinho</b> e <b>'+nF(ck)+' checkout(s) iniciados</b>. Assim que sair a 1ª venda, ROAS, CPA e ticket aparecem aqui automaticamente.';}else{note.hidden=true;}}
   // KPIs
   var js=document.getElementById('vKpis');
   function jc(cls,lbl,val,sub){return'<div class="jcard '+(cls||'')+'"><div class="jcard-lbl">'+lbl+'</div><div class="jcard-val">'+val+'</div><div class="jcard-sub">'+sub+'</div></div>';}
@@ -648,7 +709,8 @@ function renderVendas(){
     var prev=i>0?steps[i-1][2]:0;var conv=i===0?null:(prev?Math.round(s[2]/prev*1000)/10:0);
     var arrow=i===0?'':'<div class="vfarrow'+(conv<20?' bad':'')+'">↓ '+conv+'% do passo anterior</div>';
     var last=i===steps.length-1;var gcls=last?(s[2]>0?' goal':' goal off'):'';
-    return arrow+'<div class="vfstage'+gcls+'" style="width:'+w+'%"><span class="l">'+s[0]+' '+s[1]+'</span><span class="n">'+nF(s[2])+'</span></div>';
+    var pal=['#2f9a86','#1c8f7c','#0f7a6b','#0c6a5c','#0b5a4f'];var bg=last?'':';background:'+pal[Math.min(i,pal.length-1)];
+    return arrow+'<div class="vfstage'+gcls+'" style="width:'+w+'%'+bg+'"><span class="l">'+s[0]+' '+s[1]+'</span><span class="n">'+nF(s[2])+'</span></div>';
   }).join('');
   // ---- Diagnóstico automático do funil (linguagem simples) ----
   var pc=function(a,b){return b?Math.round(a/b*1000)/10:0;};
