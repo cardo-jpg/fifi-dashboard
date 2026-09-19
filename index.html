@@ -252,7 +252,7 @@ main,header,.hi,.hl,.ht,.resumo,.diag,.mkpi,.efet-card,.meta-sum-card,.mkstrip,.
 #viewVendas .jcard.hero-roas .jcard-val{color:var(--accd);}
 #viewVendas .jcard.hero-roas .jcard-sub{color:var(--mut);}
 #viewVendas .vfunnel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:28px 18px;box-shadow:0 1px 2px rgba(19,36,30,.04),0 14px 32px rgba(19,36,30,.05);}
-#viewVendas .vfstage{color:#fff;border-radius:12px;padding:14px 26px;box-shadow:none;}
+#viewVendas .vfstage{color:#fff;border-radius:12px;padding:14px 26px;box-shadow:none;max-width:none;}
 #viewVendas .vfstage .l{font-size:.8rem;font-weight:700;letter-spacing:.01em;}
 #viewVendas .vfstage .n{font-family:var(--serif);font-size:1.45rem;font-weight:700;}
 #viewVendas .vfstage.goal{background:var(--good)!important;}
@@ -705,7 +705,7 @@ function renderVendas(){
   var steps=[['👁️','Impressões',imp],['🖱️','Cliques',clk],['🌐','Visitas ao site',vis],['🛒','Add. carrinho',car],['💳','Checkout',ck],['✅','Vendas',vd]];
   var fu=document.getElementById('vFunil');
   if(fu)fu.innerHTML=steps.map(function(s,i){
-    var w=100-i*14; // largura decrescente = triângulo invertido
+    var w=98-i*16; // largura decrescente = funil (largo no topo, estreito embaixo)
     var prev=i>0?steps[i-1][2]:0;var conv=i===0?null:(prev?Math.round(s[2]/prev*1000)/10:0);
     var arrow=i===0?'':'<div class="vfarrow'+(conv<20?' bad':'')+'">↓ '+conv+'% do passo anterior</div>';
     var last=i===steps.length-1;var gcls=last?(s[2]>0?' goal':' goal off'):'';
